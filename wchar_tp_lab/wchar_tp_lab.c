@@ -32,13 +32,29 @@ wchar_t* common_part_find(wchar_t* first, wchar_t* second)
     return final_ptr;
 }
 
-int line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next, int state)
+wchar_t * line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next,wchar_t* beginning_of_last_word, int state)
 {
     wchar_t* curr_line_ptr;
     wchar_t* next_line_ptr;
-    if (state == 1) // если соединяем
+    if (state == 1) // не в начале
     {
-        
+        if (curr_line_ptr = wcschr(beginning_of_last_word, ' '))
+        {
+            *curr_line_ptr = '\0';
+            wcscpy(next, beginning_of_last_word);
+        }
+        else
+        {
+            curr_line_ptr = wcschr(beginning_of_last_word, '\n');
+            *curr_line_ptr = '\0';
+            // printf("working?");
+            //wprintf(L"%ls\n", curr);
+            wcscpy(next, beginning_of_last_word);
+            //wprintf(L"%ls\n", next);
+            //printf("working?");
+            return 0;
+        }
+        return curr_line_ptr;
     }
     else if (state == 3) // в начале
     {
@@ -54,12 +70,12 @@ int line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next, int state)
         else
         {
             next_line_ptr = wcschr(curr_line_ptr, '\n');
-            *next_line_ptr++ = '\0';
+            *next_line_ptr = '\0';
             wcscpy(next, curr_line_ptr);
-            return 4;
+            return 0;
         }
 
-        return 1;
+        return next_line_ptr;
     }
 }
 
@@ -70,37 +86,52 @@ int main(void)
     wchar_t line[LENGTH];
     wchar_t next_line[LENGTH];
     wchar_t final_line[LENGTH] = L"";
-    wchar_t *where_to_copy;
+    wchar_t *where_to_copy; // указывает на next_line часть которую надо оставить
+    wchar_t *beginning_of_last_word;
+    wchar_t *temp;
     int state = 3;
 
 
     fgetws(start_line, LENGTH, stdin);
-    state = line_assignment(start_line, line, next_line,state);
+    beginning_of_last_word = line_assignment(start_line, line, next_line,0,state);
     //wprintf(L"%ls\n%ls\n", line, next_line);
 
     do
     {
         where_to_copy = common_part_find(line, next_line);
 
-        if (where_to_copy)
+        if (where_to_copy && state == 3)
         {
-            //возможные траблы с памятью   вроде пофикшено
             wcscat(line, where_to_copy);
             wcscat(final_line, line);
-            
+            wcscpy(line, next_line);
+            state = 2;
+        }
+        else if (where_to_copy && state == 2)
+        {
+            wcscat(final_line,where_to_copy);
+            wcscpy(line, next_line);
         }
         else
         {
+            wcscat(line, next_line);
             wcscat(final_line, line);
+            wcscpy(line, next_line);
+            state = 2;
         }
 
         // костыль на выход
-        if (state == 4)
+        if (beginning_of_last_word == 0)
             break;
         else
-            state = 1;
+        {
+            //wprintf(L"%ls\n", beginning_of_last_word);
+            temp = line_assignment(start_line, line, next_line,beginning_of_last_word,1);
+            beginning_of_last_word = temp;
+            //printf("fsdofjisd");
+        }
 
-    } while (line_assignment(start_line, line, next_line,state));
+    } while (1);
 
     wprintf(L"%ls\n", final_line);
     
