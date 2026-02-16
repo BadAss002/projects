@@ -32,52 +32,77 @@ wchar_t* common_part_find(wchar_t* first, wchar_t* second)
     return final_ptr;
 }
 
+int line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next, int state)
+{
+    wchar_t* curr_line_ptr;
+    wchar_t* next_line_ptr;
+    if (state == 1) // если соединяем
+    {
+        
+    }
+    else if (state == 3) // в начале
+    {
+        curr_line_ptr = wcschr(start, ' ');
+        *curr_line_ptr++ = '\0';
+        wcscpy(curr, start);
+
+        if (next_line_ptr = wcschr(curr_line_ptr, ' '))
+        {
+            *next_line_ptr++ = '\0';
+            wcscpy(next, curr_line_ptr); 
+        }
+        else
+        {
+            next_line_ptr = wcschr(curr_line_ptr, '\n');
+            *next_line_ptr++ = '\0';
+            wcscpy(next, curr_line_ptr);
+            return 4;
+        }
+
+        return 1;
+    }
+}
+
 int main(void)
 {
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, ".UTF-8");
+    wchar_t start_line[LENGTH];
     wchar_t line[LENGTH];
     wchar_t next_line[LENGTH];
-    wchar_t final_line[LENGTH];
+    wchar_t final_line[LENGTH] = L"";
     wchar_t *where_to_copy;
+    int state = 3;
 
-    if (wscanf(L"%ls", line) == EOF)
-        return -1;
-    if (wscanf(L"%ls", next_line) == EOF)
-        return -1;
 
-    while (1)
+    fgetws(start_line, LENGTH, stdin);
+    state = line_assignment(start_line, line, next_line,state);
+    //wprintf(L"%ls\n%ls\n", line, next_line);
+
+    do
     {
         where_to_copy = common_part_find(line, next_line);
 
         if (where_to_copy)
         {
+            //возможные траблы с памятью   вроде пофикшено
             wcscat(line, where_to_copy);
             wcscat(final_line, line);
-            wcscpy(line,next_line);
-            if (wscanf(L"%ls", next_line))
-                break;
+            
         }
         else
         {
             wcscat(final_line, line);
-            wcscpy(line, next_line);
-            if (wscanf(L"%ls", next_line))
-            {
-                wcscat(final_line, line);
-                break;
-            }
         }
-    }
+
+        // костыль на выход
+        if (state == 4)
+            break;
+        else
+            state = 1;
+
+    } while (line_assignment(start_line, line, next_line,state));
 
     wprintf(L"%ls\n", final_line);
-
-
     
-
-
-
-
-
-
     return 0;
 }
