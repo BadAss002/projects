@@ -54,14 +54,14 @@ int main(void)
             wcscat(line, where_to_copy);
             wcscat(final_line, line);
             wcscpy(line,next_line);
-            if (wscanf(L"%ls", next_line) == EOF)
+            if (wscanf(L"%ls", next_line))
                 break;
         }
         else
         {
             wcscat(final_line, line);
             wcscpy(line, next_line);
-            if (wscanf(L"%ls", next_line) == EOF)
+            if (wscanf(L"%ls", next_line))
             {
                 wcscat(final_line, line);
                 break;
