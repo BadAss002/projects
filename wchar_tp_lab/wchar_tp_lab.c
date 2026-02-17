@@ -38,50 +38,60 @@ wchar_t * line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next,wchar_t* 
     wchar_t* next_line_ptr;
     if (state == 1) // не в начале
     {
-        if (curr_line_ptr = wcschr(beginning_of_last_word, ' '))
+        if (curr_line_ptr = wcschr(beginning_of_last_word, L' '))
+        {
+            *curr_line_ptr = L'\0';
+            wcscpy(next, beginning_of_last_word);
+        }
+        else if (curr_line_ptr = wcschr(beginning_of_last_word, L'\n'))
         {
             *curr_line_ptr = '\0';
             wcscpy(next, beginning_of_last_word);
+            return 0;
         }
         else
         {
-            curr_line_ptr = wcschr(beginning_of_last_word, '\n');
+            curr_line_ptr = wcschr(beginning_of_last_word, L'\n');
             *curr_line_ptr = '\0';
-            // printf("working?");
-            //wprintf(L"%ls\n", curr);
             wcscpy(next, beginning_of_last_word);
-            //wprintf(L"%ls\n", next);
-            //printf("working?");
             return 0;
         }
         return curr_line_ptr;
     }
     else if (state == 3) // в начале
     {
-        curr_line_ptr = wcschr(start, ' ');
-        *curr_line_ptr++ = '\0';
+        curr_line_ptr = wcschr(start, L' ');
+        *curr_line_ptr++ = L'\0';
         wcscpy(curr, start);
 
-        if (next_line_ptr = wcschr(curr_line_ptr, ' '))
+        if (next_line_ptr = wcschr(curr_line_ptr, L' '))
         {
-            *next_line_ptr++ = '\0';
+            *next_line_ptr++ = L'\0';
             wcscpy(next, curr_line_ptr); 
+        }
+        else if (next_line_ptr = wcschr(curr_line_ptr, L'\n'))
+        {
+            *next_line_ptr = L'\0';
+            wcscpy(next, curr_line_ptr);
+            return 0;
         }
         else
         {
-            next_line_ptr = wcschr(curr_line_ptr, '\n');
-            *next_line_ptr = '\0';
+            next_line_ptr = wcschr(curr_line_ptr, L'\0');
+            *next_line_ptr = L'\0';
             wcscpy(next, curr_line_ptr);
             return 0;
         }
 
         return next_line_ptr;
     }
+
+    return start;
 }
 
 int main(void)
 {
-    setlocale(LC_ALL, ".UTF-8");
+    setlocale(LC_ALL, "");
     wchar_t start_line[LENGTH];
     wchar_t line[LENGTH];
     wchar_t next_line[LENGTH];
@@ -92,7 +102,9 @@ int main(void)
     int state = 3;
 
 
-    fgetws(start_line, LENGTH, stdin);
+    if (fgetws(start_line, LENGTH, stdin) == NULL)
+        return 1;
+
     beginning_of_last_word = line_assignment(start_line, line, next_line,0,state);
     //wprintf(L"%ls\n%ls\n", line, next_line);
 
