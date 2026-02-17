@@ -81,7 +81,7 @@ wchar_t * line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next,wchar_t* 
 
 int main(void)
 {
-    setlocale(LC_ALL, ".UTF-8");
+    setlocale(LC_ALL, "");
     wchar_t start_line[LENGTH];
     wchar_t line[LENGTH];
     wchar_t next_line[LENGTH];
@@ -92,7 +92,9 @@ int main(void)
     int state = 3;
 
 
-    fgetws(start_line, LENGTH, stdin);
+    if (fgetws(start_line, LENGTH, stdin) == NULL)
+        return 1;
+
     beginning_of_last_word = line_assignment(start_line, line, next_line,0,state);
     //wprintf(L"%ls\n%ls\n", line, next_line);
 
