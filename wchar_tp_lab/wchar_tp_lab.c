@@ -51,8 +51,6 @@ wchar_t * line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next,wchar_t* 
         }
         else
         {
-            curr_line_ptr = wcschr(beginning_of_last_word, L'\n');
-            *curr_line_ptr = '\0';
             wcscpy(next, beginning_of_last_word);
             return 0;
         }
@@ -77,8 +75,6 @@ wchar_t * line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next,wchar_t* 
         }
         else
         {
-            next_line_ptr = wcschr(curr_line_ptr, L'\0');
-            *next_line_ptr = L'\0';
             wcscpy(next, curr_line_ptr);
             return 0;
         }
@@ -91,6 +87,8 @@ wchar_t * line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next,wchar_t* 
 
 int main(void)
 {
+    //FILE * input;
+    //input = fopen("example.txt", "r");
     setlocale(LC_ALL, "");
     wchar_t start_line[LENGTH];
     wchar_t line[LENGTH];
@@ -147,5 +145,7 @@ int main(void)
 
     wprintf(L"%ls\n", final_line);
     
+    //fclose(input);
+
     return 0;
 }
