@@ -96,12 +96,13 @@ int main(void)
     wchar_t final_line[LENGTH] = L"";
     wchar_t *where_to_copy; // указывает на next_line часть которую надо оставить
     wchar_t *beginning_of_last_word;
-    wchar_t *temp;
     int state = 3;
 
 
     if (fgetws(start_line, LENGTH, stdin) == NULL)
         return 1;
+
+    //start_line[wcscspn(start_line, L"\n")] = L'\0';
 
     beginning_of_last_word = line_assignment(start_line, line, next_line,0,state);
     //wprintf(L"%ls\n%ls\n", line, next_line);
@@ -136,8 +137,7 @@ int main(void)
         else
         {
             //wprintf(L"%ls\n", beginning_of_last_word);
-            temp = line_assignment(start_line, line, next_line,beginning_of_last_word,1);
-            beginning_of_last_word = temp;
+            beginning_of_last_word = line_assignment(start_line, line, next_line,beginning_of_last_word,1);
             //printf("fsdofjisd");
         }
 
