@@ -2,6 +2,7 @@
 #include <wchar.h>
 #include <locale.h>
 #define LENGTH 81
+#define MAX_LENGTH 81*4
 
 wchar_t* common_part_find(wchar_t* first, wchar_t* second)
 {
@@ -32,57 +33,18 @@ wchar_t* common_part_find(wchar_t* first, wchar_t* second)
     return final_ptr;
 }
 
-wchar_t * line_assignment (wchar_t* start,wchar_t* curr, wchar_t* next,wchar_t* beginning_of_last_word, int state)
+wchar_t* word_counter(wchar_t* start)
 {
-    wchar_t* curr_line_ptr;
-    wchar_t* next_line_ptr;
-    if (state == 1) // не в начале
+    wchar_t* ptr;
+    if (ptr = wcschr(start, L' '))
     {
-        if (curr_line_ptr = wcschr(beginning_of_last_word, L' '))
-        {
-            *curr_line_ptr = L'\0';
-            wcscpy(next, beginning_of_last_word);
-        }
-        else if (curr_line_ptr = wcschr(beginning_of_last_word, L'\n'))
-        {
-            *curr_line_ptr = '\0';
-            wcscpy(next, beginning_of_last_word);
-            return 0;
-        }
-        else
-        {
-            wcscpy(next, beginning_of_last_word);
-            return 0;
-        }
-        return curr_line_ptr;
+        *ptr++ = L'\0';
+        return ptr;
     }
-    else if (state == 3) // в начале
+    else
     {
-        curr_line_ptr = wcschr(start, L' ');
-        *curr_line_ptr++ = L'\0';
-        wcscpy(curr, start);
-
-        if (next_line_ptr = wcschr(curr_line_ptr, L' '))
-        {
-            *next_line_ptr++ = L'\0';
-            wcscpy(next, curr_line_ptr); 
-        }
-        else if (next_line_ptr = wcschr(curr_line_ptr, L'\n'))
-        {
-            *next_line_ptr = L'\0';
-            wcscpy(next, curr_line_ptr);
-            return 0;
-        }
-        else
-        {
-            wcscpy(next, curr_line_ptr);
-            return 0;
-        }
-
-        return next_line_ptr;
+        return 0; // перепиши если будут валиться тесты с непонятными пробелами
     }
-
-    return start;
 }
 
 int main(void)
@@ -90,60 +52,45 @@ int main(void)
     //FILE * input;
     //input = fopen("example.txt", "r");
     setlocale(LC_ALL, "");
-    wchar_t start_line[LENGTH];
-    wchar_t line[LENGTH];
-    wchar_t next_line[LENGTH];
-    wchar_t final_line[LENGTH] = L"";
-    wchar_t *where_to_copy; // указывает на next_line часть которую надо оставить
-    wchar_t *beginning_of_last_word;
-    int state = 3;
-
+    wchar_t start_line[MAX_LENGTH];
+    wchar_t word[LENGTH];
+    wchar_t next_word[LENGTH];
+    wchar_t final_word[LENGTH] = L"";
+    wchar_t* word_ptrs[LENGTH]; // массив указателей на слова в start_line
+    wchar_t *where_to_copy; // указывает на next_word часть которую надо оставить
 
     if (fgetws(start_line, LENGTH, stdin) == NULL)
         return 1;
 
-    //start_line[wcscspn(start_line, L"\n")] = L'\0';
+    int i = 0;
+    word_ptrs[i++] = start_line;
+    while (word_ptrs[i] = word_counter(word_ptrs[i-1])) i++;
 
-    beginning_of_last_word = line_assignment(start_line, line, next_line,0,state);
-    //wprintf(L"%ls\n%ls\n", line, next_line);
-
-    do
+    i = 0;
+    while (word_ptrs[i+1])
     {
-        where_to_copy = common_part_find(line, next_line);
-
-        if (where_to_copy && state == 3)
+        wcscpy(word, word_ptrs[i]);
+        wcscpy(next_word, word_ptrs[i+1]);
+        if (i == 0)
+            wcscat(final_word, word);
+        if (where_to_copy = common_part_find(word, next_word))
         {
-            wcscat(line, where_to_copy);
-            wcscat(final_line, line);
-            wcscpy(line, next_line);
-            state = 2;
-        }
-        else if (where_to_copy && state == 2)
-        {
-            wcscat(final_line,where_to_copy);
-            wcscpy(line, next_line);
+            wcscat(final_word, where_to_copy);
         }
         else
         {
-            wcscat(line, next_line);
-            wcscat(final_line, line);
-            wcscpy(line, next_line);
-            state = 2;
+            wcscat(final_word, next_word);
         }
+        for (int j=0;j<81;j++)
+            {
+                word[j] = L' ';
+                next_word[j] = L' ';
+            }
+        i++;
+    }
 
-        // костыль на выход
-        if (beginning_of_last_word == 0)
-            break;
-        else
-        {
-            //wprintf(L"%ls\n", beginning_of_last_word);
-            beginning_of_last_word = line_assignment(start_line, line, next_line,beginning_of_last_word,1);
-            //printf("fsdofjisd");
-        }
 
-    } while (1);
-
-    wprintf(L"%ls\n", final_line);
+    wprintf(L"%ls", final_word); //убери лишний \n если тесты не пройдут
     
     //fclose(input);
 
