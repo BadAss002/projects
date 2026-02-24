@@ -41,6 +41,13 @@ int main(void)
     ptr->count = 45;
 
     printf("%d %d\n", a.count, b.count);
+
+    struct a *ptrb;
+    ptrb->count = 1;
+
+    printf("%d\n", ptrb->count);
+    printf("%d\n", (*ptrb).count);
+    printf("%d %d\n", a.count, b.count);
     
 
     return 0;
