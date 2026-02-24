@@ -13,5 +13,9 @@ int main(void)
         printf("%c", ch);
     }
 
+    printf("%c", ch);
+
+    fclose(input);
+
     return 0;
 }
