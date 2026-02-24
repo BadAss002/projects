@@ -19,7 +19,7 @@ void soedinit(wchar_t *result, const wchar_t *prev, const wchar_t *curr){
 }
 int main()
 {
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, ".UTF-8");
     wchar_t input[MAX_LEN];
     wchar_t word[MAX_LEN];
     wchar_t prev[MAX_LEN] = L"";

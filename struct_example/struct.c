@@ -21,9 +21,26 @@ union t64 {
         } u64_32;
     } t64;
 
+struct a
+{
+    int count;
+    
+} a,b;
+
+
 int main(void)
 {
     t64.u64_32.t32.u32_16.t16.u16_8.ah = 255;
+    
+    a.count = 3;
+    b.count = 4;
+
+    printf("%d %d\n", a.count, b.count);
+
+    struct a *ptr = &a;
+    ptr->count = 45;
+
+    printf("%d %d\n", a.count, b.count);
     
 
     return 0;
