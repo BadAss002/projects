@@ -34,6 +34,10 @@ int main(void)
     
     a.count = 3;
     b.count = 4;
+    int d =0;
+    int *c = &d;
+
+    printf("%d\n", *c);
 
     printf("%d %d\n", a.count, b.count);
 
