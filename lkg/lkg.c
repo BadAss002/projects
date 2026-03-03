@@ -35,6 +35,21 @@ int main(void)
     s = ceil(MACHINE_WORD/twos); // расчёт мощности (потенциала)
     printf("Potency: %d\n",s);
 
+    unsigned long long first = next_x(a,m,c,x);
+    for (unsigned long long i = 0;i < 40000000000;i++)
+    {
+        x = next_x(a,m,c,x);
+        if (x == first && i != 0)
+        {
+            printf("period < 2^32 ;(\n");
+            return 0;
+        }
+        else if (i % 1000000000 == 0)
+            printf("%llu\n",x);
+    }
+    
+    printf("period > 2^32\n");
+
 
     return 0;
 }
