@@ -4,7 +4,7 @@
 #include <math.h>
 #include <limits.h>
 #define MACHINE_WORD 64
-#define NUMBERS 1000000
+#define NUMBERS 100000000
 #define NUMBER_OF_INTERVALS 15
 
 struct intervals {
@@ -30,10 +30,10 @@ int main(void)
     int c = 5; // приращение
     int s; //мощность
     struct intervals array[NUMBER_OF_INTERVALS]; //массив элементов структур с интервалами
-    double chi_squared_expected[7] = {0.03424,0.1244,0.3412,0.5500,0.7926,1.1773,1.4606};
-    double exp_chi_squared[7];
-    unsigned long long expected_count[15];
-    double V;
+    double chi_squared_expected[7] = {5.229,7.261,11.04,14.34,18.25,25.00,30.58};
+    int chi_squared_probabilities[7] = {1,5,25,50,75,95,99};
+    long double expected_count[15];
+    long double V = 0;
 
     while (a % 8 != 5) a++; //вычисление множителя
 
@@ -90,12 +90,20 @@ int main(void)
     //почини переполнение при делении (воспользуйся алтернативной формулой)
     for (int i =0;i<NUMBER_OF_INTERVALS;i++)
     {
-        V= V + powl(array[i].count-expected_count[i],2)/(long double)expected_count[i];
-        printf("%Lf\n", (array[i].count-expected_count[i])/(long double)expected_count[i]);
+        V=V+(array[i].count-expected_count[i])*(array[i].count-expected_count[i])/expected_count[i];
+        //printf("%Lf\n", V);
     }
     
-    
-    printf("V = %f\n",V);
+    printf("V = %Lf\n",V);
+
+    for (int i = 0;i<7;i++)
+    {
+        if (V <= chi_squared_expected[i])
+        {
+            printf("Chi squared probability = %d%%\n", chi_squared_probabilities[i]);
+            break;
+        }
+    }
     
     printf("period >= %d\n", NUMBERS);
 
