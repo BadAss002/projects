@@ -90,7 +90,7 @@ int main(void)
     //почини переполнение при делении (воспользуйся алтернативной формулой)
     for (int i =0;i<NUMBER_OF_INTERVALS;i++)
     {
-        V=V+(array[i].count-expected_count[i])*(array[i].count-expected_count[i])/expected_count[i];
+        V=V+(array[i].count-expected_count[i])*((array[i].count-expected_count[i])/expected_count[i]);
         //printf("%Lf\n", V);
     }
     
@@ -105,7 +105,7 @@ int main(void)
         }
     }
     
-    printf("period >= %d\n", NUMBERS);
+    printf("period >= %llu\n", (unsigned long long)NUMBERS);
 
     // for (int i=0;i<NUMBER_OF_INTERVALS;i++)
     // {
