@@ -4,14 +4,41 @@
 #include <math.h>
 #include <limits.h>
 #define MACHINE_WORD 64
-#define NUMBERS 100000000
+#define NUMBERS 10000000 
 #define NUMBER_OF_INTERVALS 15
+#define t 3 //количество чисел в группе перестановок
 
 struct intervals {
     unsigned long long border_value;
     unsigned long long count;
 };
 
+unsigned long long lehmer_index(unsigned long long* A,int r)
+{
+    unsigned long long f = 0;
+    unsigned long long mx = A[0];
+    int index = 0;
+    unsigned long long temp;
+
+    for (int i=1;i<r;i++) //поиск максимума
+    {
+        if (A[i]>mx)
+        {
+            mx = A[i];
+            index = i;
+        }
+    }
+
+    f = r*f+index-1;
+    temp = A[t];
+    A[t] = A[index];
+    A[index] = temp;
+
+    if (r>0)
+        lehmer_index(A,r-1);
+    else
+        return f;
+}
 
 __uint128_t next_x(unsigned long long a, __uint128_t m, int c, unsigned long long x)
 {
@@ -34,6 +61,9 @@ int main(void)
     int chi_squared_probabilities[7] = {1,5,25,50,75,95,99};
     long double expected_count[15];
     long double V = 0;
+    unsigned long long window[t]; 
+    unsigned long long lehmer_indexes[(int)ceil(NUMBERS/t)];
+    int index_count = 0;
 
     while (a % 8 != 5) a++; //вычисление множителя
 
@@ -61,7 +91,7 @@ int main(void)
         array[i].count = 0;
     }
 
-
+    int j = 0;
     unsigned long long first = next_x(a,m,c,x);
     for (unsigned long long i = 0;i < NUMBERS;i++)
     {
@@ -74,6 +104,16 @@ int main(void)
                 break;
             }
         }
+
+        if (i%t == t-1) //подсчёт индексов Лемера для перестановок
+        {
+            window[j]=x;
+            lehmer_indexes[index_count++] = lehmer_index(lehmer_indexes,t);
+            j=0;
+        }
+        else
+            window[j++]=x;
+
         if (x == first && i != 0) //проверяем не закончился ли период
         {
             printf("period < %d ;(\n", NUMBERS);
@@ -103,6 +143,11 @@ int main(void)
             printf("Chi squared probability = %d%%\n", chi_squared_probabilities[i]);
             break;
         }
+    }
+
+    for (int i = 0;i<index_count;i++)
+    {
+        printf("Lehmer index: %llu\n", lehmer_indexes[i]);
     }
     
     printf("period >= %llu\n", (unsigned long long)NUMBERS);
