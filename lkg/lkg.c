@@ -4,38 +4,48 @@
 #include <math.h>
 #include <limits.h>
 #define MACHINE_WORD 64
-#define NUMBERS 10000000 
+#define NUMBERS 10000000
 #define NUMBER_OF_INTERVALS 15
 #define t 3 //количество чисел в группе перестановок
+
+unsigned long long window[t]; 
+
+unsigned long long factorial(unsigned long long x)
+{
+    unsigned long long fact = 1;
+    for (int i=1;i<=x;i++)
+    {
+        fact*=i;
+    }
+    return fact;
+}
 
 struct intervals {
     unsigned long long border_value;
     unsigned long long count;
 };
 
-unsigned long long lehmer_index(unsigned long long* A,int r)
+unsigned long long lehmer_index(int r,unsigned long long f)
 {
-    unsigned long long f = 0;
-    unsigned long long mx = A[0];
+    unsigned long long mx = window[0];
     int index = 0;
     unsigned long long temp;
 
     for (int i=1;i<r;i++) //поиск максимума
     {
-        if (A[i]>mx)
+        if (window[i]>mx)
         {
-            mx = A[i];
+            mx = window[i];
             index = i;
         }
     }
+    f = r*f+(index+1)-1;
+    temp = window[t-1];
+    window[t-1] = window[index];
+    window[index] = temp;
 
-    f = r*f+index-1;
-    temp = A[t];
-    A[t] = A[index];
-    A[index] = temp;
-
-    if (r>0)
-        lehmer_index(A,r-1);
+    if (r>1)
+        lehmer_index(r-1,f);
     else
         return f;
 }
@@ -56,18 +66,14 @@ int main(void)
     unsigned long long a = floorl(0.01 * m); // множитель
     int c = 5; // приращение
     int s; //мощность
+
     struct intervals array[NUMBER_OF_INTERVALS]; //массив элементов структур с интервалами
-    double chi_squared_expected[7] = {5.229,7.261,11.04,14.34,18.25,25.00,30.58};
-    int chi_squared_probabilities[7] = {1,5,25,50,75,95,99};
-    long double expected_count[15];
-    long double V = 0;
-    unsigned long long window[t]; 
-    unsigned long long lehmer_indexes[(int)ceil(NUMBERS/t)];
-    int index_count = 0;
+    long double Vr = 0;
+    long double Vp = 0;
+    unsigned long long mem = factorial(t); //кол-во возможных индексов лемера
+    unsigned long long count_of_lehmer_indexes[mem];
 
     while (a % 8 != 5) a++; //вычисление множителя
-
-    //printf("%llu\n", a);
 
     //расчёт мощности (потенциала)
     int twos = 0; //двоек в разложенном виде a-1
@@ -91,8 +97,11 @@ int main(void)
         array[i].count = 0;
     }
 
+    int index_count = 0;
     int j = 0;
     unsigned long long first = next_x(a,m,c,x);
+    for (int i =0;i<mem;i++)
+        count_of_lehmer_indexes[i]=0;
     for (unsigned long long i = 0;i < NUMBERS;i++)
     {
         x = next_x(a,m,c,x);
@@ -108,7 +117,7 @@ int main(void)
         if (i%t == t-1) //подсчёт индексов Лемера для перестановок
         {
             window[j]=x;
-            lehmer_indexes[index_count++] = lehmer_index(lehmer_indexes,t);
+            count_of_lehmer_indexes[lehmer_index(t,0)]++;
             j=0;
         }
         else
@@ -119,42 +128,34 @@ int main(void)
             printf("period < %d ;(\n", NUMBERS);
             return 0;
         }
-        // else
-        //     printf("%llu\n",x);
     }
 
-    for (int i=0;i<NUMBER_OF_INTERVALS;i++) //массив ожидаемых попаданий в интервалы
-        expected_count[i] = NUMBERS/NUMBER_OF_INTERVALS;
-    
-
-    //почини переполнение при делении (воспользуйся алтернативной формулой)
+    //подсчёт V для разброса
+    long double expected_count = NUMBERS/NUMBER_OF_INTERVALS;
     for (int i =0;i<NUMBER_OF_INTERVALS;i++)
-    {
-        V=V+(array[i].count-expected_count[i])*((array[i].count-expected_count[i])/expected_count[i]);
-        //printf("%Lf\n", V);
-    }
+        Vr=Vr+(array[i].count-expected_count)*((array[i].count-expected_count)/expected_count);
     
-    printf("V = %Lf\n",V);
+    printf("V recoil = %Lf\n",Vr);
 
-    for (int i = 0;i<7;i++)
-    {
-        if (V <= chi_squared_expected[i])
-        {
-            printf("Chi squared probability = %d%%\n", chi_squared_probabilities[i]);
-            break;
-        }
-    }
+    //подсчёт V для перестановок
+    long double expected_count_lehmer = (NUMBERS/t)/mem;
+    for (int i=0;i<mem;i++)
+        Vp=Vp+(count_of_lehmer_indexes[i]-expected_count_lehmer)*((count_of_lehmer_indexes[i]-expected_count_lehmer)/expected_count_lehmer);
 
-    for (int i = 0;i<index_count;i++)
-    {
-        printf("Lehmer index: %llu\n", lehmer_indexes[i]);
-    }
+
+    //вывод в консоль
+    printf("V permutations = %Lf\n",Vp);
     
     printf("period >= %llu\n", (unsigned long long)NUMBERS);
 
     // for (int i=0;i<NUMBER_OF_INTERVALS;i++)
     // {
     //     printf("%d interval: %llu\n",i+1,array[i].count);
+    // }
+
+    // for (int i = 0;i<mem;i++)
+    // {
+    //     printf("Lehmer indexes count %d: %llu\n",i, count_of_lehmer_indexes[i]);
     // }
 
 
