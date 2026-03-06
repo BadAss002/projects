@@ -7,6 +7,7 @@
 #define NUMBERS 10000000
 #define NUMBER_OF_INTERVALS 15
 #define t 3 //количество чисел в группе перестановок
+#define lkg_iterations 10 //количество итераций алгоритма подсчёта критериев
 
 unsigned long long window[t]; 
 
@@ -50,41 +51,18 @@ unsigned long long lehmer_index(int r,unsigned long long f)
         return f;
 }
 
-__uint128_t next_x(unsigned long long a, __uint128_t m, int c, unsigned long long x)
+unsigned long long next_x(unsigned long long a, unsigned long long m, int c, unsigned long long x)
 {
-    __uint128_t next_x;
+    unsigned long long next_x;
     next_x = (a*x + c) % m;
 
     return next_x;
 }
 
-int main(void)
+long double recoil_criteria(unsigned long long m, unsigned long long a, int c, unsigned long long x)
 {
-    srand(time(NULL));
-    unsigned long long x = rand();
-    __uint128_t m = powl(2,MACHINE_WORD); // модуль (2^64)
-    unsigned long long a = floorl(0.01 * m); // множитель
-    int c = 5; // приращение
-    int s; //мощность
-
     struct intervals array[NUMBER_OF_INTERVALS]; //массив элементов структур с интервалами
     long double Vr = 0;
-    long double Vp = 0;
-    unsigned long long mem = factorial(t); //кол-во возможных индексов лемера
-    unsigned long long count_of_lehmer_indexes[mem];
-
-    while (a % 8 != 5) a++; //вычисление множителя
-
-    //расчёт мощности (потенциала)
-    int twos = 0; //двоек в разложенном виде a-1
-    unsigned long long b = a-1;
-    while (b % 2 == 0)
-    {
-        b/=2;
-        twos++;
-    }
-    s = ceil(MACHINE_WORD/twos);
-    printf("Potency: %d\n",s);
 
     //присваивание границ интервалам
     unsigned long long first_border = floor(ULLONG_MAX/NUMBER_OF_INTERVALS);
@@ -97,11 +75,7 @@ int main(void)
         array[i].count = 0;
     }
 
-    int index_count = 0;
-    int j = 0;
     unsigned long long first = next_x(a,m,c,x);
-    for (int i =0;i<mem;i++)
-        count_of_lehmer_indexes[i]=0;
     for (unsigned long long i = 0;i < NUMBERS;i++)
     {
         x = next_x(a,m,c,x);
@@ -113,7 +87,35 @@ int main(void)
                 break;
             }
         }
+        if (x == first && i != 0) //проверяем не закончился ли период
+        {
+            printf("period < %d ;(\n", NUMBERS);
+            return 0;
+        }
+    }
 
+    //подсчёт V для разброса
+    long double expected_count = NUMBERS/NUMBER_OF_INTERVALS;
+    for (int i =0;i<NUMBER_OF_INTERVALS;i++)
+        Vr=Vr+(array[i].count-expected_count)*((array[i].count-expected_count)/expected_count);
+    
+    return Vr; 
+}
+
+long double permutations_criteria(unsigned long long m, unsigned long long a, int c, unsigned long long x)
+{
+    long double Vp = 0;
+    unsigned long long mem = factorial(t); //кол-во возможных индексов лемера
+    unsigned long long count_of_lehmer_indexes[mem];
+
+    int index_count = 0;
+    int j = 0;
+    unsigned long long first = next_x(a,m,c,x);
+    for (int i =0;i<mem;i++)
+        count_of_lehmer_indexes[i]=0;
+    for (unsigned long long i = 0;i < NUMBERS;i++)
+    {
+        x = next_x(a,m,c,x);
         if (i%t == t-1) //подсчёт индексов Лемера для перестановок
         {
             window[j]=x;
@@ -130,21 +132,47 @@ int main(void)
         }
     }
 
-    //подсчёт V для разброса
-    long double expected_count = NUMBERS/NUMBER_OF_INTERVALS;
-    for (int i =0;i<NUMBER_OF_INTERVALS;i++)
-        Vr=Vr+(array[i].count-expected_count)*((array[i].count-expected_count)/expected_count);
-    
-    printf("V recoil = %Lf\n",Vr);
-
     //подсчёт V для перестановок
     long double expected_count_lehmer = (NUMBERS/t)/mem;
     for (int i=0;i<mem;i++)
         Vp=Vp+(count_of_lehmer_indexes[i]-expected_count_lehmer)*((count_of_lehmer_indexes[i]-expected_count_lehmer)/expected_count_lehmer);
+    
+    return Vp;
+}
+
+int main(void)
+{
+    srand(time(NULL));
+    unsigned long long x = rand();
+    unsigned long long m = ULLONG_MAX; // модуль 2^64-1
+    unsigned long long a = floorl(0.01 * m); // множитель
+    int c = 5; // приращение
+    int s; //мощность
+    long double VrExpected[lkg_iterations];
+    long double VpExpected[lkg_iterations];
+
+    while (a % 8 != 5) a++; //вычисление множителя
+
+    //расчёт мощности (потенциала)
+    int twos = 0; //двоек в разложенном виде a-1
+    unsigned long long b = a-1;
+    while (b % 2 == 0)
+    {
+        b/=2;
+        twos++;
+    }
+    s = ceil(MACHINE_WORD/twos);
+    printf("Potency: %d\n",s);
+
+
+    for(int i=0;i<lkg_iterations;i++)
+    {
+        recoil_criteria(m,a,c,x);
+        permutations_criteria(m,a,c,x);
+    }
 
 
     //вывод в консоль
-    printf("V permutations = %Lf\n",Vp);
     
     printf("period >= %llu\n", (unsigned long long)NUMBERS);
 
