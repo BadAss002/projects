@@ -143,13 +143,15 @@ long double permutations_criteria(unsigned long long m, unsigned long long a, in
 int main(void)
 {
     srand(time(NULL));
-    unsigned long long x = rand();
+    unsigned long long x;
     unsigned long long m = ULLONG_MAX; // модуль 2^64-1
     unsigned long long a = floorl(0.01 * m); // множитель
     int c = 5; // приращение
     int s; //мощность
-    long double VrExpected[lkg_iterations];
-    long double VpExpected[lkg_iterations];
+    long double VrExpected[7] = {5.229,7.261,11.04,14.34,18.25,25.00,30.58};
+    long double VpExpected[7] = {0.8721,1.635,3.455,5.385,7.841,12.59,16.81};
+    int VrTotal[4] = {0,0,0,0}; // 0-bad 1-suspicious 2-almost suspicious 3-normal
+    int VpTotal[4] = {0,0,0,0}; // 0-bad 1-suspicious 2-almost suspicious 3-normal
 
     while (a % 8 != 5) a++; //вычисление множителя
 
@@ -164,16 +166,38 @@ int main(void)
     s = ceil(MACHINE_WORD/twos);
     printf("Potency: %d\n",s);
 
-
+    long double Vr;
+    long double Vp;
     for(int i=0;i<lkg_iterations;i++)
     {
-        recoil_criteria(m,a,c,x);
-        permutations_criteria(m,a,c,x);
+        x = rand();
+        Vr = recoil_criteria(m,a,c,x);
+        Vp = permutations_criteria(m,a,c,x);
+        printf("%Lf\n",Vr);
+        if (Vr < VrExpected[0] || Vr > VrExpected[6])
+            VrTotal[0]++;
+        else if (Vr < VrExpected[1] || Vr > VrExpected[5])
+            VrTotal[1]++;
+        else if (Vr < VrExpected[2] || Vr > VrExpected[4])
+            VrTotal[2]++;
+        else
+            VrTotal[3]++;
+
+        if (Vp < VpExpected[0] || Vp > VpExpected[6])
+            VpTotal[0]++;
+        else if (Vp < VpExpected[1] || Vp > VpExpected[5])
+            VpTotal[1]++;
+        else if (Vp < VpExpected[2] || Vp > VpExpected[4])
+            VpTotal[2]++;
+        else
+            VpTotal[3]++;
     }
 
-
     //вывод в консоль
+    printf("Vrecoil\nBad:%d Suspicious:%d Almost Suspicious:%d Normal:%d\n\n",VrTotal[0],VrTotal[1],VrTotal[2],VrTotal[3]);
     
+    printf("Vpermutations\nBad:%d Suspicious:%d Almost Suspicious:%d Normal:%d\n\n",VpTotal[0],VpTotal[1],VpTotal[2],VpTotal[3]);
+
     printf("period >= %llu\n", (unsigned long long)NUMBERS);
 
     // for (int i=0;i<NUMBER_OF_INTERVALS;i++)
