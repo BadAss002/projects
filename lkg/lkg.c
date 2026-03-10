@@ -4,10 +4,10 @@
 #include <math.h>
 #include <limits.h>
 #define MACHINE_WORD 64
-#define NUMBERS 10000000
+#define NUMBERS 1000000
 #define NUMBER_OF_INTERVALS 15
 #define t 3 //количество чисел в группе перестановок
-#define lkg_iterations 10 //количество итераций алгоритма подсчёта критериев
+#define lkg_iterations 100 //количество итераций алгоритма подсчёта критериев
 
 unsigned long long window[t]; 
 
@@ -148,8 +148,8 @@ int main(void)
     unsigned long long a = floorl(0.01 * m); // множитель
     int c = 5; // приращение
     int s; //мощность
-    long double VrExpected[7] = {5.229,7.261,11.04,14.34,18.25,25.00,30.58};
-    long double VpExpected[7] = {0.8721,1.635,3.455,5.385,7.841,12.59,16.81};
+    long double VrExpected[6] = {4.660425,6.570631,7.789534,21.06414,23.68479,29.14124};
+    long double VpExpected[6] = {0.554298,1.145476,1.610308,9.236357,11.0705,15.08627};
     int VrTotal[4] = {0,0,0,0}; // 0-bad 1-suspicious 2-almost suspicious 3-normal
     int VpTotal[4] = {0,0,0,0}; // 0-bad 1-suspicious 2-almost suspicious 3-normal
 
@@ -173,21 +173,21 @@ int main(void)
         x = rand();
         Vr = recoil_criteria(m,a,c,x);
         Vp = permutations_criteria(m,a,c,x);
-        printf("%Lf\n",Vr);
-        if (Vr < VrExpected[0] || Vr > VrExpected[6])
+        // printf("%Lf\n",Vr);
+        if (Vr < VrExpected[0] || Vr > VrExpected[5])
             VrTotal[0]++;
-        else if (Vr < VrExpected[1] || Vr > VrExpected[5])
+        else if (Vr < VrExpected[1] || Vr > VrExpected[4])
             VrTotal[1]++;
-        else if (Vr < VrExpected[2] || Vr > VrExpected[4])
+        else if (Vr < VrExpected[2] || Vr > VrExpected[3])
             VrTotal[2]++;
         else
             VrTotal[3]++;
 
-        if (Vp < VpExpected[0] || Vp > VpExpected[6])
+        if (Vp < VpExpected[0] || Vp > VpExpected[5])
             VpTotal[0]++;
-        else if (Vp < VpExpected[1] || Vp > VpExpected[5])
+        else if (Vp < VpExpected[1] || Vp > VpExpected[4])
             VpTotal[1]++;
-        else if (Vp < VpExpected[2] || Vp > VpExpected[4])
+        else if (Vp < VpExpected[2] || Vp > VpExpected[3])
             VpTotal[2]++;
         else
             VpTotal[3]++;
