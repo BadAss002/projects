@@ -5,7 +5,7 @@
 #include <wctype.h>
 #include <string.h>
 
-#define MAX_TEXT 10000
+#define MAX_TEXT 100000
 #define MAX_HISTORY 1000
 #define ALPHABET 33
 
@@ -48,7 +48,7 @@ Freq freq_table[65536];
 
 void load_text()
 {
-    FILE *f = fopen("2.txt","r");
+    FILE *f = fopen("encoded_text.txt","r");
 
     if(!f)
     {
@@ -399,8 +399,7 @@ void menu()
     wprintf(L"7 Добавить замену\n");
     wprintf(L"8 Отменить замену\n");
     wprintf(L"9 Автоматическая замена\n");
-    wprintf(L"10 История замен\n");
-    wprintf(L"0 Выход\n");
+    wprintf(L"0 История замен\n");
 }
 
 int main()
@@ -414,28 +413,28 @@ int main()
 
     analyze_frequency();
 
-    int cmd;
+    wchar_t cmd;
+    wchar_t buffer[10];
 
     while(1)
     {
         menu();
 
         wprintf(L"\nВведите команду: ");
-        scanf("%d",&cmd);
+        wscanf(L" %lc", &cmd);
 
         switch(cmd)
         {
-            case 1: show_cipher(); break;
-            case 2: analyze_frequency(); break;
-            case 3: suggest_substitutions(); break;
-            case 4: show_decryption(); break;
-            case 5: group_words_by_length(); break;
-            case 6: group_words_by_unknown(); break;
-            case 7: add_substitution(); break;
-            case 8: undo_substitution(); break;
-            case 9: auto_substitution(); break;
-            case 10: show_history(); break;
-            case 0: return 0;
+            case L'1': show_cipher(); break;
+            case L'2': analyze_frequency(); break;
+            case L'3': suggest_substitutions(); break;
+            case L'4': show_decryption(); break;
+            case L'5': group_words_by_length(); break;
+            case L'6': group_words_by_unknown(); break;
+            case L'7': add_substitution(); break;
+            case L'8': undo_substitution(); break;
+            case L'9': auto_substitution(); break;
+            case L'0': show_history(); break;
         }
     }
 }
