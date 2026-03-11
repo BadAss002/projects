@@ -5,7 +5,7 @@
 #include <wctype.h>
 #include <string.h>
 
-#define shift 10
+#define shift 1
 
 int main(void)
 {
@@ -17,24 +17,28 @@ int main(void)
     wchar_t c;
     wchar_t first_alpha = L'А';
     wchar_t last_alpha = L'Я';
+    wchar_t e = L'ё';
+    wchar_t E = L'Ё';
+    wchar_t normal_e = L'е';
     wchar_t encoded_char;
 
     while ((c = fgetwc(input)) != WEOF)
     {
-        c = towupper(c);
+        if (c == e || c == E)
+            c = normal_e;
 
-        for (int i =0;i<33;i++)
+        c = towupper(c);
+        
+        if (iswalpha(c))
         {
-            if (iswalpha(c))
-            {
-                if (c+shift <= last_alpha)
-                    encoded_char = c+shift-1;
-                else
-                    encoded_char = first_alpha + (c+shift-last_alpha) -1;
-            }
+            if (c+shift <= last_alpha)
+                encoded_char = c+shift;
             else
-                encoded_char = c;
+                encoded_char = first_alpha + (c+shift-last_alpha)-1;
         }
+        else
+            encoded_char = c;
+
         fputwc(encoded_char,output);
     }
     fclose(input);
