@@ -5,7 +5,7 @@
 #include <wctype.h>
 #include <string.h>
 
-#define MAX_TEXT 100000
+#define MAX_TEXT 200000
 #define MAX_HISTORY 1000
 #define ALPHABET 33
 
@@ -166,7 +166,7 @@ void show_decryption()
         if(substitution[c])
             wprintf(L"%lc",substitution[c]);
         else if(iswalpha(c))
-            wprintf(L"*");
+            wprintf(L"%lc",text[i]);
         else
             wprintf(L"%lc",c);
     }
@@ -187,7 +187,7 @@ void add_substitution()
     wscanf(L" %lc",&p);
 
     c=towupper(c);
-    p=towupper(p);
+    p=towlower(p);
 
     substitution[c]=p;
 
@@ -379,7 +379,7 @@ void auto_substitution()
 
     for(int i=0;i<n && i<ALPHABET;i++)
     {
-        substitution[arr[i].letter]=russian_letters[i];
+        substitution[arr[i].letter]=towlower(russian_letters[i]);
     }
 
     wprintf(L"Автоматическая замена выполнена\n");

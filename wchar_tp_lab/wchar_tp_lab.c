@@ -55,7 +55,7 @@ int main(void)
     wchar_t start_line[MAX_LENGTH];
     wchar_t word[LENGTH];
     wchar_t next_word[LENGTH];
-    wchar_t final_word[LENGTH] = L"";
+    wchar_t final_word[LENGTH] = L"оеаитнсрвлкмдпуяызъьбгчйхжюшцщэф";
     wchar_t* word_ptrs[LENGTH]; // массив указателей на слова в start_line
     wchar_t *where_to_copy; // указывает на next_word часть которую надо оставить
 
