@@ -7,7 +7,7 @@
 
 #define MAX_TEXT 200000
 #define MAX_HISTORY 1000
-#define ALPHABET 33
+#define ALPHABET 32
 #define SHIFT 1
 
 wchar_t text[MAX_TEXT];
@@ -386,19 +386,23 @@ void auto_substitution()
     {
         for (int j=0;j<ALPHABET;j++) //проверка успешности автозамены
         {
-            if (arr[i].letter == russian_alphabet[j] && j+SHIFT <= ALPHABET-1)
-                expected_letter = russian_alphabet[j+SHIFT];
+            if (arr[i].letter == russian_alphabet[j] && j-SHIFT >= 0)
+            {
+                expected_letter = russian_alphabet[j-SHIFT];
+            }
             else if (arr[i].letter == russian_alphabet[j])
-                expected_letter = russian_alphabet[j+SHIFT-ALPHABET];
+            {
+                expected_letter = russian_alphabet[ALPHABET-j-SHIFT];
+            }
         }
-        wprintf(L"%lc %lc\n", expected_letter, russian_letters[i]);
+        //wprintf(L"%lc = %lc\n", expected_letter, arr[i].letter);
         if (expected_letter == russian_letters[i])
             succesful_sub++;
         substitution[arr[i].letter]=towlower(russian_letters[i]);
     }
 
     wprintf(L"Автоматическая замена выполнена\n");
-    wprintf(L"%d\n", succesful_sub);
+    wprintf(L"Успешных замен: %.4f%%\n", ((float)succesful_sub/(ALPHABET+1))*100);
 }
 
 //меню
