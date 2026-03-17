@@ -8,6 +8,7 @@
 #define MAX_TEXT 200000
 #define MAX_HISTORY 1000
 #define ALPHABET 33
+#define SHIFT 1
 
 wchar_t text[MAX_TEXT];
 
@@ -25,7 +26,9 @@ int history_size = 0;
 //частоты русских букв
 
 wchar_t russian_letters[] =
-L"ОЕАИНТСРВЛКМДПУЯЫЬГЗБЧЙХЖШЮЦЩЭФ";
+L"ОЕАИНТСРВЛКМДПУЯЫЬГЗБЧЙХЖШЮЦЩЭФЪ";
+
+wchar_t russian_alphabet[] = L"АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
 
 double russian_freq[ALPHABET] =
 {
@@ -366,6 +369,8 @@ void auto_substitution()
 {
     Freq arr[ALPHABET];
     int n=0;
+    int succesful_sub = 0;
+    wchar_t expected_letter;
 
     for(int i=0;i<65536;i++)
         if(freq_table[i].count>0)
@@ -379,10 +384,21 @@ void auto_substitution()
 
     for(int i=0;i<n && i<ALPHABET;i++)
     {
+        for (int j=0;j<ALPHABET;j++) //проверка успешности автозамены
+        {
+            if (arr[i].letter == russian_alphabet[j] && j+SHIFT <= ALPHABET-1)
+                expected_letter = russian_alphabet[j+SHIFT];
+            else if (arr[i].letter == russian_alphabet[j])
+                expected_letter = russian_alphabet[j+SHIFT-ALPHABET];
+        }
+        wprintf(L"%lc %lc\n", expected_letter, russian_letters[i]);
+        if (expected_letter == russian_letters[i])
+            succesful_sub++;
         substitution[arr[i].letter]=towlower(russian_letters[i]);
     }
 
     wprintf(L"Автоматическая замена выполнена\n");
+    wprintf(L"%d\n", succesful_sub);
 }
 
 //меню
