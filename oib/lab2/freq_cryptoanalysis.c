@@ -5,7 +5,7 @@
 #include <wctype.h>
 #include <string.h>
 
-#define MAX_TEXT 200000
+#define MAX_TEXT 1500000
 #define MAX_HISTORY 1000
 #define ALPHABET 32
 #define SHIFT 1
