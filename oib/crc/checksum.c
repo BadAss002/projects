@@ -3,9 +3,10 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #define MAX_LENGTH 400
-
+#define const_poly 0xEDB88320u
 FILE* f;
 int length = 0; //длина файла
 
@@ -27,27 +28,70 @@ int checksum(char * text,int current_length)
     return C;
 }
 
-// SRC32 (CRC-32)
-unsigned int src32(char *text,int current_length)
+// // CRC-32 как нахуй просят в методичке, математически верный на 1000%(поменять глобальную poly на 0x04C11DB7u)
+// uint32_t crc32(const unsigned char *text, size_t current_length)
+// {
+//     uint32_t crc = 0xFFFFFFFFu;
+
+//     for (size_t i=0;i<current_length; i++)
+//     {
+//         crc ^= ((uint32_t)text[i] << 24);
+
+//         for(int j = 0; j < 8; j++)
+//         {
+//             if(crc & 0x80000000u)
+//                 crc = (crc << 1) ^ const_poly;
+//             else
+//                 crc <<= 1;
+//         }
+//     }
+
+//     return crc;
+// }
+// CRC-32 как в стандарте, крутой классный, переносимый, одобряемый
+uint32_t crc32(const unsigned char *text, size_t current_length)
 {
-    unsigned int crc = 0xFFFFFFFF;
+    uint32_t crc = 0xFFFFFFFFu;
 
-    for (int i=0;i<current_length;i++)
+    for (size_t i=0;i<current_length; i++)
     {
-        crc ^= (unsigned char)text[i];
-
+        crc ^= (uint32_t)text[i];
         for(int j = 0; j < 8; j++)
         {
             if(crc & 1)
-                crc = (crc >> 1) ^ 0xEDB88320;
+                crc = (crc >> 1) ^ const_poly;
             else
                 crc >>= 1;
         }
     }
 
-    return crc;
+    return crc ^ 0xFFFFFFFFu;
 }
+//0x82F63B78 - замена для 15
+// unsigned int crc_file(const char *filename)
+// {
+//     FILE *fp = fopen(filename, "rb");
+//     if (!fp) return 0;
 
+//     unsigned int crc = 0xFFFFFFFF;
+//     int c;
+
+//     while ((c = fgetc(fp)) != EOF)
+//     {
+//         crc ^= (unsigned char)c;
+
+//         for (int i = 0; i < 8; i++)
+//         {
+//             if (crc & 1)
+//                 crc = (crc >> 1) ^ 0xEDB88320;
+//             else
+//                 crc >>= 1;
+//         }
+//     }
+
+//     fclose(fp);
+//     return crc;
+// } хуйня
 void print_line(char * text,int current_length)
 {
     for (int i=0;i<current_length;i++)
@@ -80,7 +124,7 @@ int main(void)
     print_line(text,length);
 
     int c1 = checksum(text,length); //эталонная контрольная сумма
-    unsigned int s1 = src32(text,length);
+    unsigned int s1 = crc32(text,length);
 
     // Замена символа
     int shift = rand()%length;
@@ -91,7 +135,7 @@ int main(void)
     print_line(text,length);
 
     int c2 = checksum(text,length); //контрольная сумма с заменой буквы
-    unsigned int s2 = src32(text,length);
+    unsigned int s2 = crc32(text,length);
 
     text[shift] = temp;
 
@@ -106,7 +150,7 @@ int main(void)
     //printf("%s\n\n",text_temp);
 
     int c3 = checksum(text_temp,length*2); //контрольная сумма с копией строки
-    unsigned int s3 = src32(text_temp,length*2);
+    unsigned int s3 = crc32(text_temp,length*2);
 
 
     // Перестановка символов
@@ -121,7 +165,7 @@ int main(void)
     printf("\t%c(%d) <-> %c(%d)\n\n",text,text[first_ch],first_ch,text[second_ch],second_ch);
 
     int c4 = checksum(text,length); //контрольная сумма с перестановкой символов
-    unsigned int s4 = src32(text,length);
+    unsigned int s4 = crc32(text,length);
 
     printf("Checksums:\n\
 Standard: %d\n\
@@ -134,7 +178,6 @@ Standard: %#x\n\
 Ch_replace: %#x\n\
 Str_copy: %#x\n\
 Ch_permutation: %#x\n",s1,s2,s3,s4);
-
     fclose(f);
 
     return 0;
