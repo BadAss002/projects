@@ -1,70 +1,84 @@
 text.txt
 Checksums:
 Standard: 92
-Ch_replace: 98
+Ch_replace: 81
 Str_copy: 184
 Ch_permutation: 92
 
 SRC32:
 Standard: 0x28b2e21e
-Ch_replace: 0x413abcdb
+Ch_replace: 0x7eb50615
 Str_copy: 0x185cf994
-Ch_permutation: 0x28b2e21e
+Ch_permutation: 0x953a4b0b
 ================================
 
 text9.txt
 Checksums:
 Standard: 92
-Ch_replace: 72
+Ch_replace: 150
 Str_copy: 184
 Ch_permutation: 92
 
 SRC32:
 Standard: 0x3cae69eb
-Ch_replace: 0xfa9a71a5
+Ch_replace: 0xd5551b25
 Str_copy: 0x907414f4
-Ch_permutation: 0x38fb127
+Ch_permutation: 0xaccdd173
 ================================
 
 text10.txt
 Checksums:
 Standard: 216
-Ch_replace: 192
+Ch_replace: 205
 Str_copy: 176
 Ch_permutation: 216
 
 SRC32:
 Standard: 0xbd845041
-Ch_replace: 0x4ac02228
+Ch_replace: 0x8d6af532
 Str_copy: 0xe546436d
-Ch_permutation: 0xe60a4dd9
+Ch_permutation: 0x22d01bc5
 ================================
 
 text11.txt
 Checksums:
 Standard: 216
-Ch_replace: 209
+Ch_replace: 132
 Str_copy: 176
 Ch_permutation: 216
 
 SRC32:
 Standard: 0xbd845041
-Ch_replace: 0xe7adab62
+Ch_replace: 0xf498b4d
 Str_copy: 0xe546436d
-Ch_permutation: 0xeff6d5c7
+Ch_permutation: 0xa89bc492
 ================================
 
 text12.txt
 Checksums:
 Standard: 88
-Ch_replace: 73
+Ch_replace: 146
 Str_copy: 176
 Ch_permutation: 88
 
 SRC32:
 Standard: 0x3edc99fb
-Ch_replace: 0xb99c743a
+Ch_replace: 0x8338a550
 Str_copy: 0xec55271
-Ch_permutation: 0x9d37dda0
+Ch_permutation: 0x1124b2cc
+================================
+
+big_file.docx
+Checksums:
+Standard: -63
+Ch_replace: -227
+Str_copy: -126
+Ch_permutation: -63
+
+SRC32:
+Standard: 0x518a2411
+Ch_replace: 0x3b04510e
+Str_copy: 0x81d1bf41
+Ch_permutation: 0x201f5066
 ================================
 
