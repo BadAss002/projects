@@ -7,10 +7,11 @@
 #include <stddef.h>
 
 
-#define MAX_LENGTH 40000
+#define MAX_LENGTH 4500000
 #define const_poly  0xEDB88320u
 
 FILE* f;
+FILE* g;
 int length = 0; //длина файла
 
 // Контрольная сумма
@@ -32,25 +33,25 @@ int checksum(char * text,int current_length)
 }
 
 // CRC-32 как нахуй просят в методичке, математически верный на 1000%(поменять глобальную poly на 0x04C11DB7u)
-uint32_t crc32(const unsigned char *text, size_t current_length)
-{
-    uint32_t crc = 0xFFFFFFFFu;
+// uint32_t crc32(const unsigned char *text, size_t current_length)
+// {
+//     uint32_t crc = 0xFFFFFFFFu;
 
-    for (size_t i=0;i<current_length; i++)
-    {
-        crc ^= ((uint32_t)text[i] << 24);
+//     for (size_t i=0;i<current_length; i++)
+//     {
+//         crc ^= ((uint32_t)text[i] << 24);
 
-        for(int j = 0; j < 8; j++)
-        {
-            if(crc & 0x80000000u)
-                crc = (crc << 1) ^ const_poly;
-            else
-                crc <<= 1;
-        }
-    }
+//         for(int j = 0; j < 8; j++)
+//         {
+//             if(crc & 0x80000000u)
+//                 crc = (crc << 1) ^ const_poly;
+//             else
+//                 crc <<= 1;
+//         }
+//     }
 
-    return crc ^ 0xFFFFFFFF;
-}
+//     return crc ^ 0xFFFFFFFF;
+// }
 //delenie
 // uint32_t crc32(const unsigned char *text, size_t current_length)
 // {
@@ -134,7 +135,10 @@ int main(void)
 {
     srand(time(NULL));
 
-    f = fopen("test.txt","rb");
+    char name_of_text[] = "big_file.docx";
+    f = fopen(name_of_text,"rb");
+    g = fopen("results.txt","a");
+    
 
     unsigned char text[MAX_LENGTH];
     length = fread(text, 1, MAX_LENGTH, f);
@@ -205,7 +209,22 @@ Standard: %#x\n\
 Ch_replace: %#x\n\
 Str_copy: %#x\n\
 Ch_permutation: %#x\n",s1,s2,s3,s4);
+    
+    fprintf(g,"%s\n",name_of_text);
+    fprintf(g,"Checksums:\n\
+Standard: %d\n\
+Ch_replace: %d\n\
+Str_copy: %d\n\
+Ch_permutation: %d\n\n",c1,c2,c3,c4);
+    fprintf(g,"SRC32:\n\
+Standard: %#x\n\
+Ch_replace: %#x\n\
+Str_copy: %#x\n\
+Ch_permutation: %#x\n",s1,s2,s3,s4);
+    fprintf(g,"================================\n\n");
+
     fclose(f);
+    fclose(g);
 
     return 0;
 }
