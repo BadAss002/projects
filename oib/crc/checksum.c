@@ -9,6 +9,8 @@
 
 #define MAX_LENGTH 40000
 #define const_poly  0xEDB88320u
+#define CRC_WIDTH 32
+#define POLY 0x104C11DB7u
 
 FILE* f;
 int length = 0; //длина файла
@@ -32,64 +34,95 @@ int checksum(char * text,int current_length)
 }
 
 // CRC-32 как нахуй просят в методичке, математически верный на 1000%(поменять глобальную poly на 0x04C11DB7u)
-uint32_t crc32(const unsigned char *text, size_t current_length)
-{
-    uint32_t crc = 0xFFFFFFFFu;
-
-    for (size_t i=0;i<current_length; i++)
-    {
-        crc ^= ((uint32_t)text[i] << 24);
-
-        for(int j = 0; j < 8; j++)
-        {
-            if(crc & 0x80000000u)
-                crc = (crc << 1) ^ const_poly;
-            else
-                crc <<= 1;
-        }
-    }
-
-    return crc ^ 0xFFFFFFFF;
-}
-//delenie
 // uint32_t crc32(const unsigned char *text, size_t current_length)
 // {
-//     uint32_t remainder = 0xFFFFFFFFu;
+//     uint32_t crc = 0xFFFFFFFFu;
 
-//     for (size_t i = 0; i < current_length; i++)
+//     for (size_t i=0;i<current_length; i++)
 //     {
-//         remainder ^= ((uint32_t)text[i] << 24);
+//         crc ^= ((uint32_t)text[i] << 24);
 
-//         for (int bit = 0; bit < 8; bit++)
+//         for(int j = 0; j < 8; j++)
 //         {
-//             if (remainder & 0x80000000u)
-//                 remainder = (remainder << 1) ^ const_poly;
+//             if(crc & 0x80000000u)
+//                 crc = (crc << 1) ^ const_poly;
 //             else
-//                 remainder <<= 1;
+//                 crc <<= 1;
 //         }
 //     }
 
-//     return remainder;
+//     return crc ^ 0xFFFFFFFF;
 // }
-// CRC-32 как в стандарте, крутой классный, переносимый, одобряемый
-uint32_t crc32(const unsigned char *text, size_t current_length)
-{
-    uint32_t crc = 0xFFFFFFFFu;
+//delenie
+uint32_t crc32(uint8_t* data, size_t len) {
+    size_t total_bits = len * 8 + CRC_WIDTH;
+    size_t total_bytes = (total_bits + 7) / 8;
 
-    for (size_t i=0;i<current_length; i++)
-    {
-        crc ^= (uint32_t)text[i];
-        for(int j = 0; j < 8; j++)
-        {
-            if(crc & 1)
-                crc = (crc >> 1) ^ const_poly;
-            else
-                crc >>= 1;
+    // Буфер с исходными данными + 32 нуля (CRC_WIDTH)
+    uint8_t* message = calloc(total_bytes, sizeof(uint8_t));
+    if (!message) return 0;
+    memcpy(message, data, len);
+
+    // Делимое в битах
+    uint8_t* dividend = malloc(total_bytes);
+    if (!dividend) { free(message); return 0; }
+    memcpy(dividend, message, total_bytes);
+
+    // Деление в столбик по битам
+    for (size_t bit_pos = 0; bit_pos <= total_bits - (CRC_WIDTH + 1); bit_pos++) {
+        size_t byte_idx = bit_pos / 8;
+        int bit_in_byte = 7 - (bit_pos % 8);
+
+        int current_bit = (dividend[byte_idx] >> bit_in_byte) & 1;
+
+        if (current_bit) {
+            // XOR по всем битам полинома
+            for (int i = 0; i < CRC_WIDTH + 1; i++) {
+                size_t xor_byte = (bit_pos + i) / 8;
+                int xor_bit = 7 - ((bit_pos + i) % 8);
+
+                int poly_bit = (POLY >> (CRC_WIDTH - i)) & 1;
+                if (poly_bit) dividend[xor_byte] ^= (1 << xor_bit);
+            }
         }
     }
 
-    return crc ^ 0xFFFFFFFFu;
+    // Извлечение CRC (последние 32 бита)
+    uint32_t crc = 0;
+    for (int i = 0; i < CRC_WIDTH; i++) {
+        size_t bit_pos = total_bits - CRC_WIDTH + i;
+        size_t byte_idx = bit_pos / 8;
+        int bit_in_byte = 7 - (bit_pos % 8);
+        if ((dividend[byte_idx] >> bit_in_byte) & 1) {
+            crc |= (1 << (CRC_WIDTH - 1 - i));
+        }
+    }
+
+    free(message);
+    free(dividend);
+
+    return crc;
 }
+
+// CRC-32 как в стандарте, крутой классный, переносимый, одобряемый
+// uint32_t crc32(const unsigned char *text, size_t current_length)
+// {
+//     uint32_t crc = 0xFFFFFFFFu;
+
+//     for (size_t i=0;i<current_length; i++)
+//     {
+//         crc ^= (uint32_t)text[i];
+//         for(int j = 0; j < 8; j++)
+//         {
+//             if(crc & 1)
+//                 crc = (crc >> 1) ^ const_poly;
+//             else
+//                 crc >>= 1;
+//         }
+//     }
+
+//     return crc ^ 0xFFFFFFFFu;
+// }
 //0x82F63B78 - замена для 15
 // unsigned int crc_file(const char *filename)
 // {
