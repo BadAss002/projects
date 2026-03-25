@@ -4,9 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stddef.h>
+
 
 #define MAX_LENGTH 400
 #define const_poly 0xEDB88320u
+
 FILE* f;
 int length = 0; //длина файла
 
