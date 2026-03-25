@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 
-#define MAX_LENGTH 400
-#define const_poly 0xEDB88320u
+#define MAX_LENGTH 40000
+#define const_poly  0xEDB88320u
 
 FILE* f;
 int length = 0; //длина файла
@@ -31,25 +31,45 @@ int checksum(char * text,int current_length)
     return C;
 }
 
-// // CRC-32 как нахуй просят в методичке, математически верный на 1000%(поменять глобальную poly на 0x04C11DB7u)
+// CRC-32 как нахуй просят в методичке, математически верный на 1000%(поменять глобальную poly на 0x04C11DB7u)
+uint32_t crc32(const unsigned char *text, size_t current_length)
+{
+    uint32_t crc = 0xFFFFFFFFu;
+
+    for (size_t i=0;i<current_length; i++)
+    {
+        crc ^= ((uint32_t)text[i] << 24);
+
+        for(int j = 0; j < 8; j++)
+        {
+            if(crc & 0x80000000u)
+                crc = (crc << 1) ^ const_poly;
+            else
+                crc <<= 1;
+        }
+    }
+
+    return crc ^ 0xFFFFFFFF;
+}
+//delenie
 // uint32_t crc32(const unsigned char *text, size_t current_length)
 // {
-//     uint32_t crc = 0xFFFFFFFFu;
+//     uint32_t remainder = 0xFFFFFFFFu;
 
-//     for (size_t i=0;i<current_length; i++)
+//     for (size_t i = 0; i < current_length; i++)
 //     {
-//         crc ^= ((uint32_t)text[i] << 24);
+//         remainder ^= ((uint32_t)text[i] << 24);
 
-//         for(int j = 0; j < 8; j++)
+//         for (int bit = 0; bit < 8; bit++)
 //         {
-//             if(crc & 0x80000000u)
-//                 crc = (crc << 1) ^ const_poly;
+//             if (remainder & 0x80000000u)
+//                 remainder = (remainder << 1) ^ const_poly;
 //             else
-//                 crc <<= 1;
+//                 remainder <<= 1;
 //         }
 //     }
 
-//     return crc;
+//     return remainder;
 // }
 // CRC-32 как в стандарте, крутой классный, переносимый, одобряемый
 uint32_t crc32(const unsigned char *text, size_t current_length)
@@ -114,15 +134,19 @@ int main(void)
 {
     srand(time(NULL));
 
-    f = fopen("test.txt","r");
+    f = fopen("test.txt","rb");
 
     unsigned char text[MAX_LENGTH];
-    char ch;
+    length = fread(text, 1, MAX_LENGTH, f);
+//     printf("%zu\n", length);
+//     for (size_t i = 0; i < length; i++)
+// {
+//     printf("%02X ", text[i]);
+// }
+// printf("\n");
 
-    while ((ch = fgetc(f)) != EOF)
-    {
-        text[length++] = ch;
-    }
+
+
 
     print_line(text,length);
 
