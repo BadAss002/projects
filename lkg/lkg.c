@@ -106,7 +106,7 @@ long double permutations_criteria(unsigned long long m, unsigned long long a, in
 {
     long double Vp = 0;
     unsigned long long mem = factorial(t); //кол-во возможных индексов лемера
-    unsigned long long count_of_lehmer_indexes[mem];
+    unsigned long long count_of_lehmer_indexes[6];
 
     int index_count = 0;
     int j = 0;
