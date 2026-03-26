@@ -9,7 +9,7 @@
 #define t 3 //количество чисел в группе перестановок
 #define lkg_iterations 100 //количество итераций алгоритма подсчёта критериев
 
-unsigned long long window[t]; 
+unsigned long long window[t]; //вариант перестановок из t чисел
 
 unsigned long long factorial(unsigned long long x)
 {
@@ -25,31 +25,6 @@ struct intervals {
     unsigned long long border_value;
     unsigned long long count;
 };
-
-unsigned long long lehmer_index(int r,unsigned long long f)
-{
-    unsigned long long mx = window[0];
-    int index = 0;
-    unsigned long long temp;
-
-    for (int i=1;i<r;i++) //поиск максимума
-    {
-        if (window[i]>mx)
-        {
-            mx = window[i];
-            index = i;
-        }
-    }
-    f = r*f+(index+1)-1;
-    temp = window[t-1];
-    window[t-1] = window[index];
-    window[index] = temp;
-
-    if (r>1)
-        lehmer_index(r-1,f);
-    else
-        return f;
-}
 
 unsigned long long next_x(unsigned long long a, unsigned long long m, int c, unsigned long long x)
 {
@@ -102,11 +77,30 @@ long double recoil_criteria(unsigned long long m, unsigned long long a, int c, u
     return Vr; 
 }
 
+unsigned long long lehmer_index(int rang, int permutation_index) //непосредственно подсчёт уникального индекса перестановки
+{
+    int count = 0; //сколько чисел справа меньше текущего числа
+    // rang - порядок (индекс) числа в перестановке
+    for (int i=rang+1;i<t;i++)
+    {
+        if (window[i] < window[rang])
+            count++;
+    }
+
+    permutation_index+=count*factorial(t-rang-1);
+
+    if (rang == t-1)
+        return permutation_index;
+        //printf("%d\n",permutation_index);
+    else
+        lehmer_index(rang+1,permutation_index);
+}
+
 long double permutations_criteria(unsigned long long m, unsigned long long a, int c, unsigned long long x)
 {
     long double Vp = 0;
     unsigned long long mem = factorial(t); //кол-во возможных индексов лемера
-    unsigned long long count_of_lehmer_indexes[6];
+    unsigned long long count_of_lehmer_indexes[6]; //массив кол-ва встречаемых индексов лемера
 
     int index_count = 0;
     int j = 0;
@@ -116,10 +110,10 @@ long double permutations_criteria(unsigned long long m, unsigned long long a, in
     for (unsigned long long i = 0;i < NUMBERS;i++)
     {
         x = next_x(a,m,c,x);
-        if (i%t == t-1) //подсчёт индексов Лемера для перестановок
+        if (i%t == t-1) //каждый t-ый раз вызываем подсчёт индекса перестановки
         {
             window[j]=x;
-            count_of_lehmer_indexes[lehmer_index(t,0)]++;
+            count_of_lehmer_indexes[lehmer_index(0,0)]++;
             j=0;
         }
         else
