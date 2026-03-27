@@ -82,3 +82,241 @@ Str_copy: 0x81d1bf41
 Ch_permutation: 0x201f5066
 ================================
 
+text.txt
+Checksums:
+Standard: 92
+Ch_replace: 77
+Str_copy: 184
+Ch_permutation: 92
+
+SRC32:
+Standard: 0x38f6d812
+Ch_replace: 0xf74a5d6c
+Str_copy: 0xacfcd80c
+Ch_permutation: 0xe2116d7b
+================================
+
+text14.txt
+Checksums:
+Standard: 116
+Ch_replace: 105
+Str_copy: 232
+Ch_permutation: 116
+
+SRC32:
+Standard: 0
+Ch_replace: 0x764cc707
+Str_copy: 0
+Ch_permutation: 0x3e61b22b
+================================
+
+text.txt
+Checksums:
+Standard: 92
+Ch_replace: 150
+Str_copy: 184
+Ch_permutation: 92
+
+SRC32:
+Standard: 0x11dabbdd
+Ch_replace: 0x37543a5a
+Str_copy: 0xcb1a191
+Ch_permutation: 0x538573c2
+================================
+
+14-2text.txt
+Checksums:
+Standard: 223
+Ch_replace: 214
+Str_copy: 190
+Ch_permutation: 223
+
+SRC32:
+Standard: 0
+Ch_replace: 0xbbe74cd0
+Str_copy: 0
+Ch_permutation: 0xeb63543b
+================================
+
+text.txt
+Checksums:
+Standard: 92
+Ch_replace: 150
+Str_copy: 184
+Ch_permutation: 92
+
+SRC32:
+Standard: 0xdbea01a7
+Ch_replace: 0x2dbd3362
+Str_copy: 0x8ba3379b
+Ch_permutation: 0xdbea01a7
+================================
+
+14-3text.txt
+Checksums:
+Standard: 201
+Ch_replace: 192
+Str_copy: 146
+Ch_permutation: 201
+
+SRC32:
+Standard: 0
+Ch_replace: 0xf221fa3d
+Str_copy: 0
+Ch_permutation: 0x1c3d8965
+================================
+
+text.txt
+Checksums:
+Standard: 92
+Ch_replace: 82
+Str_copy: 184
+Ch_permutation: 92
+
+SRC32:
+Standard: 0xd7d40255
+Ch_replace: 0x237aed18
+Str_copy: 0x3d21c450
+Ch_permutation: 0x58b9aa5d
+================================
+
+14-4text.txt
+Checksums:
+Standard: 94
+Ch_replace: 75
+Str_copy: 188
+Ch_permutation: 94
+
+SRC32:
+Standard: 0
+Ch_replace: 0x220129c2
+Str_copy: 0
+Ch_permutation: 0xffb8d908
+================================
+
+text.txt
+Checksums:
+Standard: 92
+Ch_replace: 82
+Str_copy: 184
+Ch_permutation: 92
+
+SRC32:
+Standard: 0x527a3278
+Ch_replace: 0x5e46bbd8
+Str_copy: 0xb438ee86
+Ch_permutation: 0x45f23478
+================================
+
+14-5text.txt
+Checksums:
+Standard: 210
+Ch_replace: 184
+Str_copy: 164
+Ch_permutation: 210
+
+SRC32:
+Standard: 0
+Ch_replace: 0x3ca52182
+Str_copy: 0
+Ch_permutation: 0x35614588
+================================
+
+text.txt
+Checksums:
+Standard: 92
+Ch_replace: 74
+Str_copy: 184
+Ch_permutation: 92
+
+SRC32:
+Standard: 0x323a0adb
+Ch_replace: 0xbf51797d
+Str_copy: 0x7ff38adb
+Ch_permutation: 0x74a19a66
+================================
+
+14-6text.txt
+Checksums:
+Standard: 173
+Ch_replace: 163
+Str_copy: 90
+Ch_permutation: 173
+
+SRC32:
+Standard: 0
+Ch_replace: 0xe007a4eb
+Str_copy: 0
+Ch_permutation: 0xdff8c1f2
+================================
+
+text.txt
+Checksums:
+Standard: 92
+Ch_replace: 150
+Str_copy: 184
+Ch_permutation: 92
+
+SRC32:
+Standard: 0x40000000
+Ch_replace: 0xc0000000
+Str_copy: 0
+Ch_permutation: 0x40000000
+================================
+
+14-7text.txt
+Checksums:
+Standard: 156
+Ch_replace: 214
+Str_copy: 56
+Ch_permutation: 156
+
+SRC32:
+Standard: 0
+Ch_replace: 0x80000000
+Str_copy: 0
+Ch_permutation: 0
+================================
+
+text.txt
+Checksums:
+Standard: 124
+Ch_replace: 98
+Str_copy: 248
+Ch_permutation: 124
+
+SRC32:
+Standard: 0xc0000000
+Ch_replace: 0
+Str_copy: 0
+Ch_permutation: 0xc0000000
+================================
+
+text.txt
+Checksums:
+Standard: 124
+Ch_replace: 100
+Str_copy: 248
+Ch_permutation: 124
+
+SRC32:
+Standard: 0xcbcfa12e
+Ch_replace: 0x4e79be5b
+Str_copy: 0x90893fe5
+Ch_permutation: 0x6fef4761
+================================
+
+14-8text.txt
+Checksums:
+Standard: 229
+Ch_replace: 17
+Str_copy: 202
+Ch_permutation: 229
+
+SRC32:
+Standard: 0
+Ch_replace: 0xcdf73b3e
+Str_copy: 0
+Ch_permutation: 0xf991cb99
+================================
+

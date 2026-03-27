@@ -10,7 +10,7 @@
 #define MAX_LENGTH 40000
 #define const_poly  0xEDB88320u
 #define CRC_WIDTH 32
-#define POLY 0x104C11DB7u
+#define POLY 0x14C11DB7u
 
 FILE* f;
 FILE* g;
@@ -55,75 +55,75 @@ int checksum(char * text,long long current_length)
 //     return crc ^ 0xFFFFFFFF;
 // }
 //delenie
-// uint32_t crc32(uint8_t* data, size_t len) {
-//     size_t total_bits = len * 8 + CRC_WIDTH;
-//     size_t total_bytes = (total_bits + 7) / 8;
+uint32_t crc32(uint8_t* data, size_t len) {
+    size_t total_bits = len * 8 + CRC_WIDTH;
+    size_t total_bytes = (total_bits + 7) / 8;
 
-//     // Буфер с исходными данными + 32 нуля (CRC_WIDTH)
-//     uint8_t* message = calloc(total_bytes, sizeof(uint8_t));
-//     if (!message) return 0;
-//     memcpy(message, data, len);
+    // Буфер с исходными данными + 32 нуля (CRC_WIDTH)
+    uint8_t* message = calloc(total_bytes, sizeof(uint8_t));
+    if (!message) return 0;
+    memcpy(message, data, len);
 
-//     // Делимое в битах
-//     uint8_t* dividend = malloc(total_bytes);
-//     if (!dividend) { free(message); return 0; }
-//     memcpy(dividend, message, total_bytes);
+    // Делимое в битах
+    uint8_t* dividend = malloc(total_bytes);
+    if (!dividend) { free(message); return 0; }
+    memcpy(dividend, message, total_bytes);
 
-//     // Деление в столбик по битам
-//     for (size_t bit_pos = 0; bit_pos <= total_bits - (CRC_WIDTH + 1); bit_pos++) {
-//         size_t byte_idx = bit_pos / 8;
-//         int bit_in_byte = 7 - (bit_pos % 8);
+    // Деление в столбик по битам
+    for (size_t bit_pos = 0; bit_pos <= total_bits - (CRC_WIDTH + 1); bit_pos++) {
+        size_t byte_idx = bit_pos / 8;
+        int bit_in_byte = 7 - (bit_pos % 8);
 
-//         int current_bit = (dividend[byte_idx] >> bit_in_byte) & 1;
+        int current_bit = (dividend[byte_idx] >> bit_in_byte) & 1;
 
-//         if (current_bit) {
-//             // XOR по всем битам полинома
-//             for (int i = 0; i < CRC_WIDTH + 1; i++) {
-//                 size_t xor_byte = (bit_pos + i) / 8;
-//                 int xor_bit = 7 - ((bit_pos + i) % 8);
+        if (current_bit) {
+            // XOR по всем битам полинома
+            for (int i = 0; i < CRC_WIDTH + 1; i++) {
+                size_t xor_byte = (bit_pos + i) / 8;
+                int xor_bit = 7 - ((bit_pos + i) % 8);
 
-//                 int poly_bit = (POLY >> (CRC_WIDTH - i)) & 1;
-//                 if (poly_bit) dividend[xor_byte] ^= (1 << xor_bit);
-//             }
-//         }
-//     }
-
-//     // Извлечение CRC (последние 32 бита)
-//     uint32_t crc = 0;
-//     for (int i = 0; i < CRC_WIDTH; i++) {
-//         size_t bit_pos = total_bits - CRC_WIDTH + i;
-//         size_t byte_idx = bit_pos / 8;
-//         int bit_in_byte = 7 - (bit_pos % 8);
-//         if ((dividend[byte_idx] >> bit_in_byte) & 1) {
-//             crc |= (1 << (CRC_WIDTH - 1 - i));
-//         }
-//     }
-
-//     free(message);
-//     free(dividend);
-
-//     return crc;
-// }
-
-// CRC-32 как в стандарте, крутой классный, переносимый, одобряемый
-uint32_t crc32(const unsigned char *text, size_t current_length)
-{
-    uint32_t crc = 0xFFFFFFFFu;
-
-    for (size_t i=0;i<current_length; i++)
-    {
-        crc ^= (uint32_t)text[i];
-        for(int j = 0; j < 8; j++)
-        {
-            if(crc & 1)
-                crc = (crc >> 1) ^ const_poly;
-            else
-                crc >>= 1;
+                int poly_bit = (POLY >> (CRC_WIDTH - i)) & 1;
+                if (poly_bit) dividend[xor_byte] ^= (1 << xor_bit);
+            }
         }
     }
 
-    return crc ^ 0xFFFFFFFFu;
+    // Извлечение CRC (последние 32 бита)
+    uint32_t crc = 0;
+    for (int i = 0; i < CRC_WIDTH; i++) {
+        size_t bit_pos = total_bits - CRC_WIDTH + i;
+        size_t byte_idx = bit_pos / 8;
+        int bit_in_byte = 7 - (bit_pos % 8);
+        if ((dividend[byte_idx] >> bit_in_byte) & 1) {
+            crc |= (1 << (CRC_WIDTH - 1 - i));
+        }
+    }
+
+    free(message);
+    free(dividend);
+
+    return crc;
 }
+
+// CRC-32 как в стандарте, крутой классный, переносимый, одобряемый
+// uint32_t crc32(const unsigned char *text, size_t current_length)
+// {
+//     uint32_t crc = 0xFFFFFFFFu;
+
+//     for (size_t i=0;i<current_length; i++)
+//     {
+//         crc ^= (uint32_t)text[i];
+//         for(int j = 0; j < 8; j++)
+//         {
+//             if(crc & 1)
+//                 crc = (crc >> 1) ^ const_poly;
+//             else
+//                 crc >>= 1;
+//         }
+//     }
+
+//     return crc ^ 0xFFFFFFFFu;
+// }
 //0x82F63B78 - замена для 15
 
 void line_double_safe(char *text, size_t text_size, const char *src, size_t src_len) {
@@ -142,7 +142,7 @@ int main(void)
 {
     srand(time(NULL));
 
-    char file_name[] = "big_file.docx";
+    char file_name[] = "14-8text.txt";
     f = fopen(file_name,"rb");
     g = fopen("results.txt","a");
     // if (!f) {
