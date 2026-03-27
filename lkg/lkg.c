@@ -100,13 +100,13 @@ long double permutations_criteria(unsigned long long m, unsigned long long a, in
 {
     long double Vp = 0;
     unsigned long long mem = factorial(t); //кол-во возможных индексов лемера
-    unsigned long long count_of_lehmer_indexes[6]; //массив кол-ва встречаемых индексов лемера
+    unsigned long long* count_of_lehmer_indexes = calloc(factorial(t),sizeof(unsigned long long)); //массив кол-ва встречаемых индексов лемера
 
     int index_count = 0;
     int j = 0;
     unsigned long long first = next_x(a,m,c,x);
-    for (int i =0;i<mem;i++)
-        count_of_lehmer_indexes[i]=0;
+    // for (int i =0;i<mem;i++)
+    //     count_of_lehmer_indexes[i]=0;
     for (unsigned long long i = 0;i < NUMBERS;i++)
     {
         x = next_x(a,m,c,x);
@@ -124,6 +124,7 @@ long double permutations_criteria(unsigned long long m, unsigned long long a, in
             printf("period < %d ;(\n", NUMBERS);
             return 0;
         }
+
     }
 
     //подсчёт V для перестановок
