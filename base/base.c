@@ -2,6 +2,7 @@
 #include <wchar.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <string.h>
 #include <math.h>
 #define START_MEMORY 20
 #define LENGTH_OF_NAME 100
@@ -39,6 +40,7 @@ struct bjj {
     int wins;
     int defeats;
     float percentage_of_wins;
+    FILE* starting_point;
 };
 
 
@@ -55,6 +57,7 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
         //wprintf(L"%lc",ch);
         if (ch == L'\n')
         {
+            //(ptr_bjj_copy+base_count)->starting_point=ftell(input_copy)+1;
             base_count++;
             if (base_count >= START_MEMORY)
             {
@@ -62,6 +65,7 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
                 ptr_bjj_copy = realloc(ptr_bjj_copy,sizeof(struct bjj)*START_MEMORY*(memory+1));
             }
             state = 0;
+            i=0;
         }
         else if (ch == L' ')
         {
@@ -151,16 +155,97 @@ struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
     
     wchar_t string[100];
     fgetws(string, 100, stdin);
-    //fprintf(input_copy,'\n');
-    int pos = ftell(input_copy);
-    fwprintf(input_copy,string);
-    fseek(input_copy,pos,SEEK_SET);
-    //wprintf(L"%d\n", base_count);
+    // int pos = ftell(input_copy); 
+    // fwprintf(input_copy,string);
+    // fseek(input_copy,pos,SEEK_SET);
     read_file(input_copy,bjj_copy);
 
     return bjj_copy;
 }
 
+void delete(struct bjj* bjj_copy, int index)
+{
+    struct bjj* bjj_delete=bjj_copy+index;
+    for (int i = 0; i<LENGTH_OF_NAME;i++)
+        bjj_delete->surname[i]=NULL;
+    
+    base_count--;
+}
+
+void search(struct bjj* bjj_copy)
+{
+    wprintf(L"Укажите объект поиска\n\
+0-Фамилия 1-Имя 2-Отчество 3-Курс 4-Тип_Обучения\
+ 5-Институт 6-Код_Направления 7-Номер_Группы 8-Победы 9-Поражения\n");
+
+    wchar_t state;
+    state = getwchar();
+    wchar_t string[LENGTH_OF_NAME];
+    int *founded = malloc(sizeof(int)*(memory+1)*START_MEMORY);
+    int count_of_founded = 0;
+
+    if (state == L'0')
+    {
+        wprintf(L"Введите фамилию:\n");
+        wchar_t c;
+        while ((c = getwchar()) != '\n' && c != EOF);
+        fgetws(string,LENGTH_OF_NAME,stdin);
+        string[wcslen(string)-1] = L'\0';
+        for (int i=0;i<base_count;i++)
+        {
+            int fl = 1;
+            for (int j=0;j<wcslen(string);j++)
+                if (string[j] != (bjj_copy+i)->surname[j]) fl=0;
+            if (fl)
+            {
+                founded[count_of_founded] = i;
+                count_of_founded++; 
+                wprintf(L"%d",i);
+            }
+        }
+    }
+    else if (state == L'1')
+    {
+        wprintf(L"Введите имя:\n");
+        wchar_t c;
+        while ((c = getwchar()) != '\n' && c != EOF);
+        fgetws(string,LENGTH_OF_NAME,stdin);
+        string[wcslen(string)-1] = L'\0';
+        for (int i=0;i<base_count;i++)
+        {
+            int fl = 1;
+            for (int j=0;j<wcslen(string);j++)
+                if (string[j] != (bjj_copy+i)->name[j]) fl=0;
+            if (fl)
+            {
+                founded[count_of_founded] = i;
+                count_of_founded++; 
+                wprintf(L"%d",i);
+            }
+        }
+    }
+    if (state == L'2')
+    {
+        wprintf(L"Введите отчество:\n");
+        wchar_t c;
+        while ((c = getwchar()) != '\n' && c != EOF);
+        fgetws(string,LENGTH_OF_NAME,stdin);
+        string[wcslen(string)-1] = L'\0';
+        for (int i=0;i<base_count;i++)
+        {
+            int fl = 1;
+            for (int j=0;j<wcslen(string);j++)
+                if (string[j] != (bjj_copy+i)->patronymic[j]) fl=0;
+            if (fl)
+            {
+                founded[count_of_founded] = i;
+                count_of_founded++; 
+                wprintf(L"%d",i);
+            }
+        }
+    }
+    
+}
 
 
 int main(void)
@@ -174,9 +259,15 @@ int main(void)
     //ptr_bjj = realloc(ptr_bjj, sizeof(struct bjj)*100);
     ptr_bjj = read_file(input, ptr_bjj);
 
-    ptr_bjj = insert(input,ptr_bjj);
+    //ptr_bjj = insert(input,ptr_bjj);
 
-    wprintf(L"%d %ls\n",base_count, (ptr_bjj+base_count-1)->name);
+    //delete(ptr_bjj, 1);
+
+    search(ptr_bjj);
+
+    //wprintf(L"%ls %ls %ls\n",(ptr_bjj)->surname,(ptr_bjj+1)->surname,(ptr_bjj+18)->surname);
+
+    fclose(input);
 
     return 0;
 }

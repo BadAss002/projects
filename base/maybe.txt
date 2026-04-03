@@ -20,3 +20,19 @@ wprintf(L"Введите имя:\n");
     fgets(wins_temp,5,stdin);
     wprintf(L"Введите число поражений:\n");
     fgets(defeats_temp,5,stdin);
+
+
+        bjj_delete->surname[i]=NULL;
+        bjj_delete->name[i]=NULL;
+        bjj_delete->patronymic[i]=NULL;
+    }
+    bjj_delete->course_type=NULL;
+    bjj_delete->course=NULL;
+    bjj_delete->institute=NULL;
+    for (int i=0;i<CODE_LENGTH;i++)
+        bjj_delete->direction[i]=NULL;
+    for (int i=0;i<GROUP_NUM_LENGTH;i++)
+        bjj_delete->group_number[i]=NULL;
+    bjj_delete->wins=NULL;
+    bjj_delete->defeats=NULL;
+    bjj_delete->percentage_of_wins=0;
