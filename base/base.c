@@ -35,6 +35,8 @@ struct student
 };
 
 struct bjj {
+    int index; //номер сборника
+    int start_pos; //начало строки в файле
     wchar_t surname[LENGTH_OF_NAME];
     wchar_t name[LENGTH_OF_NAME];
     wchar_t patronymic[LENGTH_OF_NAME];
@@ -49,8 +51,13 @@ struct bjj {
     int wins;
     int defeats;
     float percentage_of_wins;
-    FILE* starting_point;
 };
+
+void clear_buffer()
+{
+    wchar_t c;
+    while ((c = getwchar()) != L'\n' && c != WEOF); //очистка stdin
+}
 
 
 struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
@@ -61,13 +68,13 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
     char conversion[2];
     int state = 0;
     int i = 0;
+    int starting_point;
     //ptr_bjj_copy = realloc(ptr_bjj_copy,sizeof(struct bjj)*100);
     while ((ch = fgetwc(input_copy)) != WEOF)
     {
         //wprintf(L"%lc",ch);
         if (ch == L'\n')
         {
-            //(ptr_bjj_copy+base_count)->starting_point=ftell(input_copy)+1;
             if (state == 9)
             {
                 defeats_temp[i] = '\0';
@@ -75,6 +82,8 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
                 (ptr_bjj_copy+base_count)->defeats=atoi(defeats_temp);
                 (ptr_bjj_copy+base_count)->percentage_of_wins=(float)(ptr_bjj_copy+base_count)->wins/((ptr_bjj_copy+base_count)->wins+(ptr_bjj_copy+base_count)->defeats);
             }
+            (ptr_bjj_copy+base_count)->start_pos=ftell(input_copy)+1;
+            (ptr_bjj_copy+base_count)->index=base_count;
             base_count++;
             if (base_count >= START_MEMORY)
             {
@@ -163,7 +172,7 @@ struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
         bjj_copy = realloc(bjj_copy,sizeof(struct bjj)*START_MEMORY*(memory+1));
     }
 
-    struct bjj* new_ptr = bjj_copy+base_count;
+    struct bjj* new_ptr = bjj_copy+base_count; //check
     for (int i = 0;i<base_count;i++)
         if (bjj_copy+i==NULL)
             new_ptr = bjj_copy+i;
@@ -174,6 +183,7 @@ struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
 0 - ФизМех\n1 - ИКНК\n2 - ИПМЭиТ\n3 - ГИ\n4 - ИММиТ\n5 - ИСИ\n6 - ИБСиБ\n7 - ИФКСТ\n8 - ИЭиТ\n9 - ИЭ\n* - СПО\n");
     
     wchar_t string[100];
+    //clear_buffer();
     if (!fgetws(string, 100, stdin))
     {
         wprintf(L"Ошибка синтаксиса");
@@ -200,15 +210,43 @@ void delete(struct bjj* bjj_copy, int index)
     base_count--;
 }
 
+void show(struct bjj* bjj_copy, int i)
+{
+    wprintf(L"%d %ls %ls %ls %lc ",
+    (bjj_copy+i)->index,
+    (bjj_copy+i)->surname,
+    (bjj_copy+i)->name,
+    (bjj_copy+i)->patronymic,
+    (bjj_copy+i)->course);
+    if ((bjj_copy+i)->team_member.student.course_type == бакалавриат) wprintf(L"бакалавриат ");
+    else if ((bjj_copy+i)-> team_member.student.course_type == магистратура) wprintf(L"магистратура ");
+    else if ((bjj_copy+i)-> team_member.student.course_type == специалитет) wprintf(L"специалитет ");
+    else if ((bjj_copy+i)-> team_member.student.course_type == аспирантура) wprintf(L"аспирантура ");
+    else wprintf(L"СПО ");
+    if ((bjj_copy+i)->team_member.student.institute == ФизМех) wprintf(L"ФизМех ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИКНК) wprintf(L"ИКНК ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИПМЭиТ) wprintf(L"ИПМЭиТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ГИ) wprintf(L"ГИ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИММиТ) wprintf(L"ИММиТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИСИ) wprintf(L"ИСИ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИБСиБ) wprintf(L"ИБСиБ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИФКСТ) wprintf(L"ИФКСТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИЭиТ) wprintf(L"ИЭиТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ИЭ) wprintf(L"ИЭ ");
+    wprintf(L"%ls\\%ls %d\\%d Процент побед:%.2f%%\n",
+    (bjj_copy+i)->direction,
+    (bjj_copy+i)->group_number,
+    (bjj_copy+i)->wins,
+    (bjj_copy+i)->defeats,
+    (bjj_copy+i)->percentage_of_wins*100);
+}
+
 void search(struct bjj* bjj_copy)
 {
     wchar_t string[LENGTH_OF_NAME];
     int *founded = malloc(sizeof(int)*(memory+1)*START_MEMORY);
     int count_of_founded = 0;
     wprintf(L"Введите фамилию:\n");
-
-    wchar_t c;
-    while ((c = getwchar()) != '\n' && c != EOF); //очистка stdin
 
     if (!fgetws(string,LENGTH_OF_NAME,stdin))
         wprintf(L"Ошибка");
@@ -226,47 +264,42 @@ void search(struct bjj* bjj_copy)
             count_of_founded++; 
         }
     }
-}
 
-void show(struct bjj* bjj_copy, int mode, int*founded, int count_of_founded)
-{
-    if (mode == 0) //показать всех
+    for (int i = 0;i<count_of_founded;i++)
     {
-        for (int i=0;i<base_count;i++)
-        {
-            wprintf(L"%ls %ls %ls %lc ",
-            (bjj_copy+i)->surname,
-            (bjj_copy+i)->name,
-            (bjj_copy+i)->patronymic,
-            (bjj_copy+i)->course);
-            if ((bjj_copy+i)->team_member.student.course_type == бакалавриат) wprintf(L"бакалавриат ");
-            else if ((bjj_copy+i)-> team_member.student.course_type == магистратура) wprintf(L"магистратура ");
-            else if ((bjj_copy+i)-> team_member.student.course_type == специалитет) wprintf(L"специалитет ");
-            else if ((bjj_copy+i)-> team_member.student.course_type == аспирантура) wprintf(L"аспирантура ");
-            else wprintf(L"СПО ");
-            if ((bjj_copy+i)->team_member.student.institute == ФизМех) wprintf(L"ФизМех ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИКНК) wprintf(L"ИКНК ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИПМЭиТ) wprintf(L"ИПМЭиТ ");
-            else if ((bjj_copy+i)->team_member.student.institute == ГИ) wprintf(L"ГИ ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИММиТ) wprintf(L"ИММиТ ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИСИ) wprintf(L"ИСИ ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИБСиБ) wprintf(L"ИБСиБ ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИФКСТ) wprintf(L"ИФКСТ ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИЭиТ) wprintf(L"ИЭиТ ");
-            else if ((bjj_copy+i)->team_member.student.institute == ИЭ) wprintf(L"ИЭ ");
-            wprintf(L"%ls\\%ls %d\\%d Процент побед:%.2f%%\n",
-            (bjj_copy+i)->direction,
-            (bjj_copy+i)->group_number,
-            (bjj_copy+i)->wins,
-            (bjj_copy+i)->defeats,
-            (bjj_copy+i)->percentage_of_wins*100);
-        }
+        show(bjj_copy,founded[i]);
     }
 }
 
-void menu(struct bjj* bjj_copy)
+int menu(struct bjj* bjj_copy, FILE* input_copy)
 {
+    wchar_t state;
+    wprintf(L"Введите комманду:\n(0-показать всех 1-добавить сборника 2-удалить сборника 3-поиск по фамилии)\n");
     
+    fflush(stdin);
+    state = getwchar();
+    getwchar(); //чтобы убрать \n из stdin
+
+    if (state == L'0')
+        for (int i =0;i<base_count;i++)
+            show(bjj_copy,i);
+    else if (state == L'1')
+        insert(input_copy,bjj_copy);
+    else if (state == L'2')
+    {
+        wprintf(L"Введите номер сборника:");
+        int length = (floor(log10((double)base_count)) + 1);
+        int index;
+        char *number = malloc(sizeof(wchar_t)*length);
+        if (!fgets(number,length,stdin))
+            wprintf(L"Неправильно набран номер");
+        index = atoi(number);
+        delete(bjj_copy,index);
+    }
+    else if (state == L'3')
+        search(bjj_copy);
+
+
 }
 
 
@@ -280,15 +313,10 @@ int main(void)
     ptr_bjj = (struct bjj*)malloc(START_MEMORY*sizeof(struct bjj));
     //ptr_bjj = realloc(ptr_bjj, sizeof(struct bjj)*100);
     ptr_bjj = read_file(input, ptr_bjj);
+    while (1)
+        menu(ptr_bjj,input);
 
-    //ptr_bjj = insert(input,ptr_bjj);
-
-    //delete(ptr_bjj, 1);
-
-    //search(ptr_bjj);
-    //show(ptr_bjj,0,NULL,0);
-
-    //wprintf(L"%ls %ls %ls\n",(ptr_bjj)->surname,(ptr_bjj+1)->surname,(ptr_bjj+18)->surname);
+    //допиши удаление сборника и актуализацию файла
 
     fclose(input);
 
