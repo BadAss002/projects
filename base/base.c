@@ -15,22 +15,22 @@ int memory = 0; // количество увеличений памяти
 struct student
 {
     enum course_type {
-        бакалавриат,
-        магистратура,
-        специалитет,
-        аспирантура
+        bachelors,
+        masters,
+        specialist,
+        aspirant
     } course_type;
     enum institute {
-    ФизМех,
-    ИКНК,
-    ИПМЭиТ,
-    ГИ,
-    ИММиТ,
-    ИСИ,
-    ИБСиБ,
-    ИФКСТ,
-    ИЭиТ,
-    ИЭ
+    PhysMech,
+    IKNK,
+    IPMEiT,
+    GI,
+    IMMiT,
+    ISI,
+    IBSiB,
+    IFKST,
+    IEiT,
+    IE
     } institute;
 };
 
@@ -201,7 +201,6 @@ void delete(struct bjj* bjj_copy, int index)
 {
     struct bjj* bjj_delete=bjj_copy+index;
     bjj_delete->index=-1;
-    base_count--;
 }
 
 void show(struct bjj* bjj_copy, int i)
@@ -212,21 +211,21 @@ void show(struct bjj* bjj_copy, int i)
     (bjj_copy+i)->name,
     (bjj_copy+i)->patronymic,
     (bjj_copy+i)->course);
-    if ((bjj_copy+i)->team_member.student.course_type == бакалавриат) wprintf(L"бакалавриат ");
-    else if ((bjj_copy+i)-> team_member.student.course_type == магистратура) wprintf(L"магистратура ");
-    else if ((bjj_copy+i)-> team_member.student.course_type == специалитет) wprintf(L"специалитет ");
-    else if ((bjj_copy+i)-> team_member.student.course_type == аспирантура) wprintf(L"аспирантура ");
+    if ((bjj_copy+i)->team_member.student.course_type == bachelors) wprintf(L"бакалавриат ");
+    else if ((bjj_copy+i)-> team_member.student.course_type == masters) wprintf(L"магистратура ");
+    else if ((bjj_copy+i)-> team_member.student.course_type == specialist) wprintf(L"специалитет ");
+    else if ((bjj_copy+i)-> team_member.student.course_type == aspirant) wprintf(L"аспирантура ");
     else wprintf(L"СПО ");
-    if ((bjj_copy+i)->team_member.student.institute == ФизМех) wprintf(L"ФизМех ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИКНК) wprintf(L"ИКНК ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИПМЭиТ) wprintf(L"ИПМЭиТ ");
-    else if ((bjj_copy+i)->team_member.student.institute == ГИ) wprintf(L"ГИ ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИММиТ) wprintf(L"ИММиТ ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИСИ) wprintf(L"ИСИ ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИБСиБ) wprintf(L"ИБСиБ ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИФКСТ) wprintf(L"ИФКСТ ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИЭиТ) wprintf(L"ИЭиТ ");
-    else if ((bjj_copy+i)->team_member.student.institute == ИЭ) wprintf(L"ИЭ ");
+    if ((bjj_copy+i)->team_member.student.institute == PhysMech) wprintf(L"ФизМех ");
+    else if ((bjj_copy+i)->team_member.student.institute == IKNK) wprintf(L"ИКНК ");
+    else if ((bjj_copy+i)->team_member.student.institute == IPMEiT) wprintf(L"ИПМЭиТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == GI) wprintf(L"ГИ ");
+    else if ((bjj_copy+i)->team_member.student.institute == IMMiT) wprintf(L"ИММиТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == ISI) wprintf(L"ИСИ ");
+    else if ((bjj_copy+i)->team_member.student.institute == IBSiB) wprintf(L"ИБСиБ ");
+    else if ((bjj_copy+i)->team_member.student.institute == IFKST) wprintf(L"ИФКСТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == IEiT) wprintf(L"ИЭиТ ");
+    else if ((bjj_copy+i)->team_member.student.institute == IE) wprintf(L"ИЭ ");
     wprintf(L"%ls\\%ls %d\\%d Процент побед:%.2f%%\n",
     (bjj_copy+i)->direction,
     (bjj_copy+i)->group_number,
@@ -250,6 +249,7 @@ void search(struct bjj* bjj_copy)
     for (int i=0;i<base_count;i++)
     {
         int fl = 1;
+        if ((bjj_copy+i)->index==-1) fl=0;
         for (int j=0;j<wcslen(string);j++)
             if (string[j] != (bjj_copy+i)->surname[j]) fl=0;
         if (fl)
@@ -267,37 +267,39 @@ void search(struct bjj* bjj_copy)
 
 int menu(struct bjj* bjj_copy, FILE* input_copy)
 {
-    wchar_t state;
-    wprintf(L"Введите комманду:\n(0-показать всех 1-добавить сборника 2-удалить сборника 3-поиск по фамилии 4-сохранить и выйти)\n");
-    fflush(stdin);
-    state = getwchar();
-    getwchar(); //чтобы убрать \n из stdin
-    //wprintf(L"%d", state == L'1');
-
-    if (state == L'0')
+    while(1)
     {
-        for (int i =0;i<base_count;i++)
-            if((bjj_copy+i)->index != -1)
-                show(bjj_copy,i);
-    }
-    else if (state == L'1')
-        insert(input_copy,bjj_copy);
-    else if (state == L'2')
-    {
-        wprintf(L"Введите номер сборника:\n");
-        int length = (floor(log10((double)base_count)) + 1);
-        int index;
-        //wchar_t *number = malloc(sizeof(wchar_t)*length);
-        // if (!fgetws(number,length,stdin))
-        //     wprintf(L"Неправильно набран номер");
-        wscanf(L"%d",&index);
-        delete(bjj_copy,index);
-    }
-    else if (state == L'3')
-        search(bjj_copy);
-    else if (state == L'4') return 0;
+        wchar_t state;
+        wprintf(L"Введите комманду:\n(0-показать всех 1-добавить сборника 2-удалить сборника 3-поиск по фамилии 4-сохранить и выйти)\n");
+        fflush(stdin);
+        state = getwchar();
+        getwchar(); //чтобы убрать \n из stdin
+        //wprintf(L"%lc", state);
 
-
+        if (state == L'0')
+        {
+            for (int i =0;i<base_count;i++)
+                if((bjj_copy+i)->index != -1)
+                    show(bjj_copy,i);
+        }
+        else if (state == L'1')
+            insert(input_copy,bjj_copy);
+        else if (state == L'2')
+        {
+            wprintf(L"Введите номер сборника:\n");
+            int length = (floor(log10((double)base_count)) + 1);
+            int index;
+            //wchar_t *number = malloc(sizeof(wchar_t)*length);
+            // if (!fgetws(number,length,stdin))
+            //     wprintf(L"Неправильно набран номер");
+            wscanf(L"%d",&index);
+            getwchar();
+            delete(bjj_copy,index);
+        }
+        else if (state == L'3')
+            search(bjj_copy);
+        else if (state == L'4') return 0;
+    }
 }
 
 void text_update(FILE* input_copy,FILE* updated_copy, struct bjj* bjj_copy)
@@ -329,7 +331,11 @@ int main(void)
     ptr_bjj = (struct bjj*)malloc(START_MEMORY*sizeof(struct bjj));
     //ptr_bjj = realloc(ptr_bjj, sizeof(struct bjj)*100);
     ptr_bjj = read_file(input, ptr_bjj);
-    while (menu(ptr_bjj,input));
+
+    int i;
+    menu(ptr_bjj,input);
+
+    //wprintf(L"\n%d", i);
 
     //допиши удаление сборника и актуализацию файла
 
