@@ -200,13 +200,7 @@ struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
 void delete(struct bjj* bjj_copy, int index)
 {
     struct bjj* bjj_delete=bjj_copy+index;
-    for (int i = 0; i<LENGTH_OF_NAME;i++)
-    {
-        bjj_delete->surname[i]=L'\0';
-        bjj_delete->name[i]=L'\0';
-        bjj_delete->patronymic[i]=L'\0';
-    }
-    
+    bjj_delete->index=-1;
     base_count--;
 }
 
@@ -274,32 +268,52 @@ void search(struct bjj* bjj_copy)
 int menu(struct bjj* bjj_copy, FILE* input_copy)
 {
     wchar_t state;
-    wprintf(L"Введите комманду:\n(0-показать всех 1-добавить сборника 2-удалить сборника 3-поиск по фамилии)\n");
-    
+    wprintf(L"Введите комманду:\n(0-показать всех 1-добавить сборника 2-удалить сборника 3-поиск по фамилии 4-сохранить и выйти)\n");
     fflush(stdin);
     state = getwchar();
     getwchar(); //чтобы убрать \n из stdin
+    //wprintf(L"%d", state == L'1');
 
     if (state == L'0')
+    {
         for (int i =0;i<base_count;i++)
-            show(bjj_copy,i);
+            if((bjj_copy+i)->index != -1)
+                show(bjj_copy,i);
+    }
     else if (state == L'1')
         insert(input_copy,bjj_copy);
     else if (state == L'2')
     {
-        wprintf(L"Введите номер сборника:");
+        wprintf(L"Введите номер сборника:\n");
         int length = (floor(log10((double)base_count)) + 1);
         int index;
-        char *number = malloc(sizeof(wchar_t)*length);
-        if (!fgets(number,length,stdin))
-            wprintf(L"Неправильно набран номер");
-        index = atoi(number);
+        //wchar_t *number = malloc(sizeof(wchar_t)*length);
+        // if (!fgetws(number,length,stdin))
+        //     wprintf(L"Неправильно набран номер");
+        wscanf(L"%d",&index);
         delete(bjj_copy,index);
     }
     else if (state == L'3')
         search(bjj_copy);
+    else if (state == L'4') return 0;
 
 
+}
+
+void text_update(FILE* input_copy,FILE* updated_copy, struct bjj* bjj_copy)
+{
+    fseek(input_copy,0,SEEK_SET);
+    wchar_t string[100];
+    for (int i =0;i<base_count;i++)
+    {
+        if (!fgetws(string,100,input_copy)) wprintf(L"Ошибка записи файла");
+        if ((bjj_copy+i)->index != -1)
+            fwprintf(updated_copy,string);
+    }
+    fclose(input_copy);
+    fclose(updated_copy);
+    remove("text.txt");
+    rename("temp.txt", "text.txt");
 }
 
 
@@ -307,18 +321,19 @@ int main(void)
 {
     setlocale(LC_ALL, "");
     FILE* input;
+    FILE* updated;
     input = fopen("text.txt", "r+");
+    updated = fopen("temp.txt", "w");
 
     struct bjj * ptr_bjj;
     ptr_bjj = (struct bjj*)malloc(START_MEMORY*sizeof(struct bjj));
     //ptr_bjj = realloc(ptr_bjj, sizeof(struct bjj)*100);
     ptr_bjj = read_file(input, ptr_bjj);
-    while (1)
-        menu(ptr_bjj,input);
+    while (menu(ptr_bjj,input));
 
     //допиши удаление сборника и актуализацию файла
 
-    fclose(input);
+    text_update(input,updated,ptr_bjj);
 
     return 0;
 }
