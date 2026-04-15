@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 
-#define MAX_LENGTH 450000000
+#define MAX_LENGTH 40000
 #define const_poly  0xEDB88320u
 #define CRC_WIDTH 32
 #define POLY 0x104C11DB7u
@@ -33,7 +33,7 @@ int checksum(char * text,int current_length)
     return C;
 }
 
-// CRC-32 как просят в методичке, математически верный на 1000%(поменять глобальную poly на 0x04C11DB7u)
+// CRC-32 как нахуй просят в методичке, математически верный на 1000%(поменять глобальную poly на 0x04C11DB7u)
 // uint32_t crc32(const unsigned char *text, size_t current_length)
 // {
 //     uint32_t crc = 0xFFFFFFFFu;
@@ -124,30 +124,6 @@ uint32_t crc32(const unsigned char *text, size_t current_length)
     return crc ^ 0xFFFFFFFFu;
 }
 //0x82F63B78 - замена для 15
-unsigned int crc_file(const char *filename)
-{
-    FILE *fp = fopen(filename, "rb");
-    if (!fp) return 0;
-
-    unsigned int crc = 0xFFFFFFFF;
-    int c;
-
-    while ((c = fgetc(fp)) != EOF)
-    {
-        crc ^= (unsigned char)c;
-
-        for (int i = 0; i < 8; i++)
-        {
-            if (crc & 1)
-                crc = (crc >> 1) ^ 0xEDB88320;
-            else
-                crc >>= 1;
-        }
-    }
-
-    fclose(fp);
-    return crc;
-} 
 void print_line(char * text,int current_length)
 {
     for (int i=0;i<current_length;i++)
@@ -188,6 +164,7 @@ int main(void)
 
 
 
+
     print_line(text,length);
 
     int c1 = checksum(text,length); //эталонная контрольная сумма
@@ -207,11 +184,11 @@ int main(void)
     text[shift] = temp;
 
     // Копирование строки
-    char text_temp[MAX_LENGTH];
+    char text_temp[MAX_LENGTH * 2];
     for (int i=0;i<length;i++)
         text_temp[i]=text[i];
     
-    line_double(text_temp);
+    line_double_safe(text_temp, sizeof(text_temp), text, length);
 
     print_line(text_temp,length*2);
     //printf("%s\n\n",text_temp);
