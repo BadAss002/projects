@@ -5,42 +5,42 @@
 struct model{
 union t32_eax{
     __uint32_t eax;
-    struct u32_16_eax{
-        __uint16_t none;   
+    struct u32_16_eax{   
         union t16_eax{
             __uint16_t ax;
             struct u16_8_eax{
-                __uint8_t ah;
                 __uint8_t al;
+                __uint8_t ah;
             }u16_8_eax;
         }t16_eax;  
-    }u32_16_eax;  
+        __uint16_t none;
+    }u32_16_eax;
 }t32_eax;
 
 union t32_ecx{
     __uint32_t ecx;
-    struct u32_16_ecx{
-        __uint16_t none;   
+    struct u32_16_ecx{   
         union t16_ecx{
             __uint16_t cx;
             struct u16_8_ecx{
-                __uint8_t ch;
                 __uint8_t cl;
+                __uint8_t ch;
             }u16_8_ecx;
+        __uint16_t none;
         }t16_ecx;  
     }u32_16_ecx;  
 }t32_ecx;
 
 union t32_edx{
     __uint32_t edx;
-    struct u32_16_edx{
-        __uint16_t none;   
+    struct u32_16_edx{   
         union t16_edx{
             __uint16_t dx;
             struct u16_8_edx{
-                __uint8_t dh;
                 __uint8_t dl;
+                __uint8_t dh;
             }u16_8_edx;
+        __uint16_t none;
         }t16_edx;  
     }u32_16_edx;  
 }t32_edx;
@@ -157,7 +157,7 @@ int main(void)
 {
     FILE* input;
     input = fopen("commands.txt","r");
-    command_handler(input);
+    //command_handler(input);
 
     return 0;
 }

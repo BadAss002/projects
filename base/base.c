@@ -83,7 +83,7 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
                 (ptr_bjj_copy+base_count)->percentage_of_wins=(float)(ptr_bjj_copy+base_count)->wins/((ptr_bjj_copy+base_count)->wins+(ptr_bjj_copy+base_count)->defeats);
             }
             (ptr_bjj_copy+base_count)->start_pos=ftell(input_copy)+1;
-            (ptr_bjj_copy+base_count)->index=base_count;
+            (ptr_bjj_copy+base_count)->index=base_count+1;
             base_count++;
             if (base_count >= START_MEMORY)
             {
@@ -174,8 +174,10 @@ struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
 
     struct bjj* new_ptr = bjj_copy+base_count; //check
     for (int i = 0;i<base_count;i++)
-        if (bjj_copy+i==NULL)
+    {
+        if ((bjj_copy+i)->index == -1)
             new_ptr = bjj_copy+i;
+    }
     
     wprintf(L"Введите нового члена сборной по следующей форме:\n\
 Фамилия Имя Отчество Курс Тип_Обучения Институт Код_Направления Номер_Группы Победы Поражения\n\
@@ -192,14 +194,14 @@ struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
     int pos = ftell(input_copy); 
     fwprintf(input_copy,string);
     fseek(input_copy,pos,SEEK_SET);
-    read_file(input_copy,bjj_copy);
+    read_file(input_copy,bjj_copy); //передай опцию через параметр и измени священный base_count, но затем не забудь присвоить его обратно!
 
     return bjj_copy;
 }
 
 void delete(struct bjj* bjj_copy, int index)
 {
-    struct bjj* bjj_delete=bjj_copy+index;
+    struct bjj* bjj_delete=bjj_copy+index-1;
     bjj_delete->index=-1;
 }
 
@@ -232,6 +234,8 @@ void show(struct bjj* bjj_copy, int i)
     (bjj_copy+i)->wins,
     (bjj_copy+i)->defeats,
     (bjj_copy+i)->percentage_of_wins*100);
+
+    //wprintf(L"%d\n",base_count);
 }
 
 void search(struct bjj* bjj_copy)
@@ -278,7 +282,7 @@ int menu(struct bjj* bjj_copy, FILE* input_copy)
 
         if (state == L'0')
         {
-            for (int i =0;i<base_count;i++)
+            for (int i=0;i<base_count;i++)
                 if((bjj_copy+i)->index != -1)
                     show(bjj_copy,i);
         }
@@ -289,12 +293,12 @@ int menu(struct bjj* bjj_copy, FILE* input_copy)
             wprintf(L"Введите номер сборника:\n");
             int length = (floor(log10((double)base_count)) + 1);
             int index;
-            //wchar_t *number = malloc(sizeof(wchar_t)*length);
-            // if (!fgetws(number,length,stdin))
-            //     wprintf(L"Неправильно набран номер");
             wscanf(L"%d",&index);
             getwchar();
-            delete(bjj_copy,index);
+            if (index < 1 || index > base_count)
+                wprintf(L"Ошибка: неправильно набран номер\n");
+            else
+                delete(bjj_copy,index);
         }
         else if (state == L'3')
             search(bjj_copy);
@@ -336,8 +340,6 @@ int main(void)
     menu(ptr_bjj,input);
 
     //wprintf(L"\n%d", i);
-
-    //допиши удаление сборника и актуализацию файла
 
     text_update(input,updated,ptr_bjj);
 
