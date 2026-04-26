@@ -2,12 +2,12 @@
 #include <string.h>
 #include <locale.h>
 
-#define MAX_LEN 100
+#define MAX_LEN 10000
 
 int check_password(const char *input) {
     FILE *file = fopen("password.txt", "r");
     if (file == NULL) {
-        printf("Ошибка открытия файла с паролем\n");
+        printf("Error\n");
         return 0;
     }
 
