@@ -1,0 +1,2 @@
+mov EAX 0xC155DD13
+mov DX EAX
