@@ -45,8 +45,9 @@ union t32_edx{
     }u32_16_edx;  
 }t32_edx;
 
-__uint32_t eip;
 }model;
+
+__uint32_t eip;
 
 int regtoi(char * regist_ptr) //converts string registr to int
 {
@@ -113,164 +114,278 @@ int regtoi(char * regist_ptr) //converts string registr to int
     return number;
 }
 
-void mov(char* regist_ptr, char* arg_ch_ptr)
+void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-sub 3-shw
 {
     int arg;
+    eip++;
+
     if (arg_ch_ptr[0] == '0') //if arg is number
-    {
         arg = strtol(arg_ch_ptr,NULL,0);
-        if (strchr(regist_ptr,'A'))
-        {
-            if (strchr(regist_ptr, 'E')) //EAX
-            {
-                model.t32_eax.eax = arg;
-            }
-            else if (strchr(regist_ptr,'X')) //AX
-            {
-                model.t32_eax.u32_16_eax.t16_eax.ax = arg;
-            }
-            else if (strchr(regist_ptr,'H')) //AH
-            {
-                model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah = arg;
-            }
-            else //AL
-            {
-                model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al = arg;
-            }
-        }
-        else if (strchr(regist_ptr,'C'))
-        {
-            if (strchr(regist_ptr, 'E')) //ECX
-            {
-                model.t32_ecx.ecx = arg;
-            }
-            else if (strchr(regist_ptr,'X')) //CX
-            {
-                model.t32_ecx.u32_16_ecx.t16_ecx.cx = arg;
-
-            }
-            else if (strchr(regist_ptr,'H')) //CH
-            {
-                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch = arg;
-            }
-            else //CL
-            {
-                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl = arg;
-            }
-        }
-        else
-        {
-            if (strchr(regist_ptr, 'E')) //EDX
-            {
-                model.t32_edx.edx = arg;
-            }
-            else if (strchr(regist_ptr,'X')) //DX
-            {
-                model.t32_edx.u32_16_edx.t16_edx.dx = arg;
-            }
-            else if (strchr(regist_ptr,'H')) //DH
-            {
-                model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh = arg;
-            }
-            else //DL
-            {
-                model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl = arg;
-            }
-        }
-    }
-    else //if arg is regist
-    {
+    else    //if arg is registr
         arg = regtoi(arg_ch_ptr);
-        if (strchr(regist_ptr,'A'))
+    
+    if (strchr(regist_ptr,'A'))
+    {
+        if (strchr(regist_ptr, 'E')) //EAX
         {
-            if (strchr(regist_ptr, 'E')) //EAX
+            switch (command)
             {
+            case 0:
                 model.t32_eax.eax = arg;
+                break;
+            case 1:
+                model.t32_eax.eax += arg;
+                break;
+            case 2:
+                model.t32_eax.eax -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_eax.eax);
+            default:
+                break;
             }
-            else if (strchr(regist_ptr,'X')) //AX
+        }
+        else if (strchr(regist_ptr,'X')) //AX
+        {
+            switch (command)
             {
+            case 0:
                 model.t32_eax.u32_16_eax.t16_eax.ax = arg;
+                break;
+            case 1:
+                model.t32_eax.u32_16_eax.t16_eax.ax += arg;
+                break;
+            case 2:
+                model.t32_eax.u32_16_eax.t16_eax.ax -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_eax.u32_16_eax.t16_eax.ax);
+            default:
+                break;
             }
-            else if (strchr(regist_ptr,'H')) //AH
+        }
+        else if (strchr(regist_ptr,'H')) //AH
+        {
+            switch (command)
             {
+            case 0:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah = arg;
+                break;
+            case 1:
+                model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah += arg;
+                break;
+            case 2:
+                model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah);
+            default:
+                break;
             }
-            else //AL
+        }
+        else //AL
+        {
+            switch (command)
             {
+            case 0:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al = arg;
+                break;
+            case 1:
+                model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al += arg;
+                break;
+            case 2:
+                model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al);
+            default:
+                break;
             }
         }
-        else if (strchr(regist_ptr,'C'))
+    }
+    else if (strchr(regist_ptr,'C'))
+    {
+        if (strchr(regist_ptr, 'E')) //ECX
         {
-            if (strchr(regist_ptr, 'E')) //ECX
+            switch (command)
             {
+            case 0:
                 model.t32_ecx.ecx = arg;
-            }
-            else if (strchr(regist_ptr,'X')) //CX
-            {
-                model.t32_ecx.u32_16_ecx.t16_ecx.cx = arg;
-
-            }
-            else if (strchr(regist_ptr,'H')) //CH
-            {
-                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch = arg;
-            }
-            else //CL
-            {
-                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl = arg;
+                break;
+            case 1:
+                model.t32_ecx.ecx += arg;
+                break;
+            case 2:
+                model.t32_ecx.ecx -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_ecx.ecx);
+            default:
+                break;
             }
         }
-        else
+        else if (strchr(regist_ptr,'X')) //CX
         {
-            if (strchr(regist_ptr, 'E')) //EDX
+            switch (command)
             {
+            case 0:
+                model.t32_ecx.u32_16_ecx.t16_ecx.cx = arg;
+                break;
+            case 1:
+                model.t32_ecx.u32_16_ecx.t16_ecx.cx += arg;
+                break;
+            case 2:
+                model.t32_ecx.u32_16_ecx.t16_ecx.cx -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_ecx.u32_16_ecx.t16_ecx.cx);
+            default:
+                break;
+            }
+        }
+        else if (strchr(regist_ptr,'H')) //CH
+        {
+            switch (command)
+            {
+            case 0:
+                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch = arg;
+                break;
+            case 1:
+                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch += arg;
+                break;
+            case 2:
+                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch);
+            default:
+                break;
+            }
+        }
+        else //CL
+        {
+            switch (command)
+            {
+            case 0:
+                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl = arg;
+                break;
+            case 1:
+                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl += arg;
+                break;
+            case 2:
+                model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl);
+            default:
+                break;
+            }
+        }
+    }
+    else
+    {
+        if (strchr(regist_ptr, 'E')) //EDX
+        {
+            switch (command)
+            {
+            case 0:
                 model.t32_edx.edx = arg;
+                break;
+            case 1:
+                model.t32_edx.edx += arg;
+                break;
+            case 2:
+                model.t32_edx.edx -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_edx.edx);
+            default:
+                break;
             }
-            else if (strchr(regist_ptr,'X')) //DX
+        }
+        else if (strchr(regist_ptr,'X')) //DX
+        {
+            switch (command)
             {
+            case 0:
                 model.t32_edx.u32_16_edx.t16_edx.dx = arg;
+                break;
+            case 1:
+                model.t32_edx.u32_16_edx.t16_edx.dx += arg;
+                break;
+            case 2:
+                model.t32_edx.u32_16_edx.t16_edx.dx -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_edx.u32_16_edx.t16_edx.dx);
+            default:
+                break;
             }
-            else if (strchr(regist_ptr,'H')) //DH
+        }
+        else if (strchr(regist_ptr,'H')) //DH
+        {
+            switch (command)
             {
+            case 0:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh = arg;
+                break;
+            case 1:
+                model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh += arg;
+                break;
+            case 2:
+                model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh);
+            default:
+                break;
             }
-            else //DL
+        }
+        else //DL
+        {
+            switch (command)
             {
+            case 0:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl = arg;
+                break;
+            case 1:
+                model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl += arg;
+                break;
+            case 2:
+                model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl -= arg;
+                break;
+            case 3:
+                printf("0x%x\n", model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl);
+            default:
+                break;
             }
         }
     }
 }
-void shw()
-{
-    printf("2\n");
-}
-void add()
-{
-    printf("3\n");
-}
-void sub()
-{
-    printf("4\n");
-}
+
 
 void command_handler(FILE* input_copy)
 {
-    char line[20];
-    char command[4];
-    char regist[4];
-    char arg_ch[11];
+    char line[20] ="";
+    char command[4] ="";
+    char regist[4] ="";
+    char arg_ch[11] ="";
     int arg;
     char state = 0;
     char ch = 0;
+    eip = 1;
+
     while (fgets(line,20,input_copy))
     {
         //printf("%s\n", line);
         for (int i=0;i<=strlen(line);i++)
         {
-            if (line[i] == '\n')
+            if (line[i] == '\n' || line[i] == '\0')
             {
-                arg_ch[ch] = '\0';
+                if (state == 1)
+                    regist[ch] = '\0';
+                else if (state == 2)
+                    arg_ch[ch] = '\0';
                 ch = 0;
                 state = 0;
                 break;
@@ -291,18 +406,41 @@ void command_handler(FILE* input_copy)
             else if (state == 2)
                 arg_ch[ch++] = line[i];
         }
+        //printf("%s %s %s\n",command, regist, arg_ch);
+        // printf("%s\n", regist);
+        // printf("%d\n", strcmp(regist,"EIP"));
+        if ((strcmp(command,"shw") == 0) && (strcmp(regist,"EIP") == 0))
+        {
+            printf("%#x\n",eip);
+            eip++;
+            // for (int i=0;i<4;i++)
+            // {
+            //     command[i] = ' ';
+            //     regist[i] = ' ';
+            // }
+            // for (int i=0;i<11;i++)
+            //     arg_ch[i] = ' ';
+            continue;
+        }
+
         if (strcmp(command,"mov") == 0)
         {
-            printf("%s %s %s\n",command, regist, arg_ch);
-            mov(regist, arg_ch);
+            commands(regist, arg_ch, 0);
         }
-        // else if (strcmp(command,"shw"))
-        //     shw();
-        // else if (strcmp(command,"add"))
-        //     add();
-        // else if(strcmp(command,"sub"))
-        //     sub();
-        
+        else if (strcmp(command,"add") == 0)
+            commands(regist, arg_ch, 1);
+        else if (strcmp(command,"sub") == 0)
+            commands(regist, arg_ch, 2);
+        else if(strcmp(command,"shw") == 0)
+            commands(regist, arg_ch, 3);
+
+        // for (int i=0;i<4;i++)
+        // {
+        //     command[i] = ' ';
+        //     regist[i] = ' ';
+        // }
+        // for (int i=0;i<11;i++)
+        //     arg_ch[i] = ' ';
     }
     
 }
@@ -311,7 +449,7 @@ void command_handler(FILE* input_copy)
 int main(void)
 {
     FILE* input;
-    input = fopen("test.txt","r");
+    input = fopen("commands.txt","r");
     command_handler(input);
     //printf("%x\n%x\n%x\n%x\n", model.t32_edx.edx, model.t32_eax.u32_16_eax.t16_eax.ax, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al);
 
