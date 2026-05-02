@@ -1,3 +1,3 @@
-mov EAX 0xC155DD13
-mov DX EAX
-shw EIP
+mov EAX 0xFFFFFFFE
+add EAX 0x32193129
+shw EAX
