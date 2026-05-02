@@ -60,7 +60,7 @@ void clear_buffer()
 }
 
 
-struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
+struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy, int fl, int prev_base_count)
 {
     wchar_t ch;
     char wins_temp[5];
@@ -82,7 +82,7 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
                 (ptr_bjj_copy+base_count)->defeats=atoi(defeats_temp);
                 (ptr_bjj_copy+base_count)->percentage_of_wins=(float)(ptr_bjj_copy+base_count)->wins/((ptr_bjj_copy+base_count)->wins+(ptr_bjj_copy+base_count)->defeats);
             }
-            (ptr_bjj_copy+base_count)->start_pos=ftell(input_copy)+1;
+            (ptr_bjj_copy+base_count+1)->start_pos=ftell(input_copy)+1;
             (ptr_bjj_copy+base_count)->index=base_count+1;
             base_count++;
             if (base_count >= START_MEMORY)
@@ -137,7 +137,7 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
             case 5:
                 conversion[0] = ch;
                 conversion[1]= '\0';
-                if (!((ptr_bjj_copy+base_count)->team_member.spo == -1))
+                if ((ptr_bjj_copy+base_count)->team_member.spo != -1)
                     (ptr_bjj_copy+base_count)->team_member.student.institute = atoi(conversion);
                 else 
                     (ptr_bjj_copy+base_count)->team_member.student.institute = 10;
@@ -161,22 +161,31 @@ struct bjj* read_file(FILE* input_copy, struct bjj* ptr_bjj_copy)
         }
     }
 
+    if (fl == 1)
+        base_count = prev_base_count;
+    
     return ptr_bjj_copy;
 }
 
 struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
 {
+    int fl = 0;
+    int temp_base_count = base_count;
+
     if (base_count >= START_MEMORY*(memory+1))
     {
         memory++;
         bjj_copy = realloc(bjj_copy,sizeof(struct bjj)*START_MEMORY*(memory+1));
     }
 
-    struct bjj* new_ptr = bjj_copy+base_count; //check
+    //struct bjj* new_ptr = bjj_copy+base_count; //check
     for (int i = 0;i<base_count;i++)
     {
         if ((bjj_copy+i)->index == -1)
-            new_ptr = bjj_copy+i;
+        {
+            fl=1;
+            base_count = i;
+        }
     }
     
     wprintf(L"Введите нового члена сборной по следующей форме:\n\
@@ -194,7 +203,10 @@ struct bjj* insert(FILE* input_copy,struct bjj* bjj_copy)
     int pos = ftell(input_copy); 
     fwprintf(input_copy,string);
     fseek(input_copy,pos,SEEK_SET);
-    read_file(input_copy,bjj_copy); //передай опцию через параметр и измени священный base_count, но затем не забудь присвоить его обратно!
+    if (fl)
+        read_file(input_copy,bjj_copy,fl,temp_base_count);
+    else
+        read_file(input_copy,bjj_copy,fl,temp_base_count);
 
     return bjj_copy;
 }
@@ -295,31 +307,64 @@ int menu(struct bjj* bjj_copy, FILE* input_copy)
             int index;
             wscanf(L"%d",&index);
             getwchar();
-            if (index < 1 || index > base_count)
-                wprintf(L"Ошибка: неправильно набран номер\n");
+            if (index < 1 || index > base_count || (bjj_copy+index-1)->index == -1)
+                wprintf(L"Ошибка: сборника с таким номером не существует\n");
             else
                 delete(bjj_copy,index);
         }
         else if (state == L'3')
             search(bjj_copy);
         else if (state == L'4') return 0;
+        else wprintf(L"Неправильный номер команды");
     }
 }
 
-void text_update(FILE* input_copy,FILE* updated_copy, struct bjj* bjj_copy)
+void text_update(FILE* input_copy,struct bjj* bjj_copy)
 {
-    fseek(input_copy,0,SEEK_SET);
+    //fseek(input_copy,0,SEEK_SET);
     wchar_t string[100];
+    struct bjj* current;
     for (int i =0;i<base_count;i++)
     {
-        if (!fgetws(string,100,input_copy)) wprintf(L"Ошибка записи файла");
-        if ((bjj_copy+i)->index != -1)
-            fwprintf(updated_copy,string);
+        current = bjj_copy +i;
+        if (current->index != -1)
+        {
+            fwprintf(input_copy,current->surname);
+            fputwc(L' ',input_copy);
+            fwprintf(input_copy,current->name);
+            fputwc(L' ',input_copy);
+            fwprintf(input_copy,current->patronymic);
+            fputwc(L' ',input_copy);
+            fwprintf(input_copy,L"%lc",current->course);
+            fputwc(L' ',input_copy);
+            if(current->team_member.spo != -1)
+            {
+                fwprintf(input_copy,L"%d",current->team_member.student.course_type);
+                fputwc(L' ',input_copy);
+                fwprintf(input_copy,L"%d",current->team_member.student.institute);
+                fputwc(L' ',input_copy);
+            }
+            else
+            {
+                fputwc(L'4',input_copy);
+                fputwc(L' ',input_copy);
+                fputwc(L'*',input_copy);
+                fputwc(L' ',input_copy);
+            }
+            fputws(current->direction, input_copy);
+            fputwc(L' ',input_copy);
+            fputws(current->group_number, input_copy);
+            fputwc(L' ',input_copy);
+            fwprintf(input_copy,L"%d",current->wins);
+            fputwc(L' ',input_copy);
+            fwprintf(input_copy,L"%d",current->defeats);
+            fputwc(L'\n',input_copy);
+
+        }
     }
+
+
     fclose(input_copy);
-    fclose(updated_copy);
-    remove("text.txt");
-    rename("temp.txt", "text.txt");
 }
 
 
@@ -334,14 +379,14 @@ int main(void)
     struct bjj * ptr_bjj;
     ptr_bjj = (struct bjj*)malloc(START_MEMORY*sizeof(struct bjj));
     //ptr_bjj = realloc(ptr_bjj, sizeof(struct bjj)*100);
-    ptr_bjj = read_file(input, ptr_bjj);
+    ptr_bjj = read_file(input, ptr_bjj,0,0);
 
     int i;
     menu(ptr_bjj,input);
+    fclose(input);
+    input = fopen("text.txt", "w");
 
-    //wprintf(L"\n%d", i);
-
-    text_update(input,updated,ptr_bjj);
+    text_update(input,ptr_bjj);
 
     return 0;
 }
