@@ -30,11 +30,11 @@ struct list* insert_sort_list(struct list* list_start)
     struct list* temp;
     struct list* prev_temp;
     struct list* swap;
-    int k = 0;
+    
     while (last_sorted->next != NULL)
     {
         current = last_sorted->next;
-        if (current->data < list_start->data) //если нужно вставить в начало отсортированной части
+        if (current->data <= list_start->data) //если нужно вставить в начало отсортированной части
         {
             //изменение ссылок
             last_sorted->next = current->next;
@@ -52,10 +52,7 @@ struct list* insert_sort_list(struct list* list_start)
             {
                 prev_temp = temp;
                 temp=temp->next;
-                k++;
-                if (k>978) break;
             }
-            k=0;
             //изменение ссылок в списке
             prev_temp->next = current;
             swap = current->next;
@@ -121,13 +118,12 @@ void time_measure(int size)
         }
     }
     //output before sorting
-    current = list_start;
-    for (int i=0;i<size;i++)
-    {
-        printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
-        current = current->next;
-    }
-    // return 0;
+    // current = list_start;
+    // for (int i=0;i<size;i++)
+    // {
+    //     printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
+    //     current = current->next;
+    // }
 
     //measuring execution time
     start = __rdtsc();
@@ -140,14 +136,13 @@ void time_measure(int size)
     end = __rdtsc();
     time_list = end - start;
     //output after sorting and mesuring execution time
-    printf("---------------------------------\n");
-    current = list_start;
-    for (int i=0;i<size;i++)
-    {
-        printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
-        current = current->next;
-    }
-    //printf("time_arr: %llu, time_list: %llu\n", time_arr, time_list);
+    //printf("---------------------------------\n");
+    // current = list_start;
+    // for (int i=0;i<size;i++)
+    // {
+    //     printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
+    //     current = current->next;
+    // }
     if (time_arr > time_list)
         printf("list sort faster by %llu tacts\n", time_arr-time_list);
     else
