@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <x86intrin.h>
 
 struct list{
     int data;
@@ -22,13 +23,14 @@ void insert_sort_arr(int * A, int size)
     }
 }
 
-struct list* insert_sort_list(struct list* list_start, int size)
+struct list* insert_sort_list(struct list* list_start)
 {
     struct list* last_sorted = list_start;
     struct list* current;
     struct list* temp;
     struct list* prev_temp;
     struct list* swap;
+    int k = 0;
     while (last_sorted->next != NULL)
     {
         current = last_sorted->next;
@@ -39,7 +41,7 @@ struct list* insert_sort_list(struct list* list_start, int size)
             current->next = list_start;
             list_start = current;
         }
-        else if (current->data > last_sorted->data) //если нужно вставить в конец отсортированной части
+        else if (current->data >= last_sorted->data) //если нужно вставить в конец отсортированной части
         {   
             last_sorted = current;
         }
@@ -50,7 +52,10 @@ struct list* insert_sort_list(struct list* list_start, int size)
             {
                 prev_temp = temp;
                 temp=temp->next;
+                k++;
+                if (k>978) break;
             }
+            k=0;
             //изменение ссылок в списке
             prev_temp->next = current;
             swap = current->next;
@@ -62,19 +67,44 @@ struct list* insert_sort_list(struct list* list_start, int size)
     return list_start;
 }
 
-
-int main(void)
+int find_max_arr(int * A, int size)
 {
-    int size; //number of elements
-    printf("Enter number of elements:");
-    if (!scanf("%d", &size)) printf("Input error");
+    int x = A[0];
+    for (int i=0;i<size-1;i++)
+    {
+        if (A[i+1] > x) x = A[i+1]; 
+    }
 
+    return x;
+    // for (int i=0;i<size-1;i++)
+    // {
+    //     int k=i;
+    //     int x=A[i];
+    //     for (int j=i+1;j<size-1;j++)
+    //     {
+    //         if (A[j] > x)
+    //         {
+    //             k=j;
+    //             x=A[k];
+    //         }
+    //         A[k] = A[i];
+    //         A[i] = x;
+    //     }
+    // }
+}
+
+void time_measure(int size)
+{
+    unsigned long long start;
+    unsigned long long end;
+    unsigned long long time_arr;
+    unsigned long long time_list;
+    
     int* array = malloc(sizeof(int)*size);
-
     struct list* list_start = malloc(sizeof(struct list));
     
     //filling arr and list with random ints
-    srand(time(NULL));
+    srand(1);
     int x;
     struct list* current = list_start;
     for (int i=0;i<size;i++)
@@ -90,15 +120,26 @@ int main(void)
             current = current->next;
         }
     }
-
+    //output before sorting
     current = list_start;
     for (int i=0;i<size;i++)
     {
         printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
         current = current->next;
     }
+    // return 0;
+
+    //measuring execution time
+    start = __rdtsc();
     insert_sort_arr(array,size);
-    list_start = insert_sort_list(list_start,size);
+    end = __rdtsc();
+    time_arr = end - start;
+    
+    start = __rdtsc();
+    list_start = insert_sort_list(list_start); //fails when size>977 cause two 28's is minimum FIX PLS
+    end = __rdtsc();
+    time_list = end - start;
+    //output after sorting and mesuring execution time
     printf("---------------------------------\n");
     current = list_start;
     for (int i=0;i<size;i++)
@@ -106,6 +147,28 @@ int main(void)
         printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
         current = current->next;
     }
+    //printf("time_arr: %llu, time_list: %llu\n", time_arr, time_list);
+    if (time_arr > time_list)
+        printf("list sort faster by %llu tacts\n", time_arr-time_list);
+    else
+        printf("array sort faster by %llu tacts\n", time_list-time_arr);
+}
+
+int main(void)
+{
+
+    int size; //number of elements
+    int iterations;
+    printf("Enter number of elements:");
+    if (!scanf("%d", &size)) printf("Input error");
+    printf("Enter number of iterations:");
+    if (!scanf("%d", &iterations)) printf("Input error");
+
+    for (int i=0;i<iterations;i++)
+    {
+        time_measure(size);
+    }
+
 
     return 0;
 }
