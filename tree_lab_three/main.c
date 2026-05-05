@@ -101,7 +101,7 @@ void time_measure(int size)
     struct list* list_start = malloc(sizeof(struct list));
     
     //filling arr and list with random ints
-    srand(1);
+    srand(time(NULL));
     int x;
     struct list* current = list_start;
     for (int i=0;i<size;i++)
@@ -144,14 +144,13 @@ void time_measure(int size)
     //     current = current->next;
     // }
     if (time_arr > time_list)
-        printf("list sort faster by %llu tacts\n", time_arr-time_list);
+        printf("arr: %llu list: %llu, list sort faster by %lf%%\n",time_arr,time_list,((double)time_arr/time_list-1)*100);
     else
-        printf("array sort faster by %llu tacts\n", time_list-time_arr);
+        printf("arr: %llu list: %llu, array sort faster by %lf%%\n",time_arr,time_list,((double)time_list/time_arr-1)*100);
 }
 
 int main(void)
 {
-
     int size; //number of elements
     int iterations;
     printf("Enter number of elements:");
@@ -162,6 +161,7 @@ int main(void)
     for (int i=0;i<iterations;i++)
     {
         time_measure(size);
+        //replace mallocs to main before time mesurement!!
     }
 
 
