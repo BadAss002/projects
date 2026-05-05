@@ -90,33 +90,15 @@ int find_max_arr(int * A, int size)
     // }
 }
 
-void time_measure(int size)
+void time_measure(int size, int* array, struct list* list_start)
 {
     unsigned long long start;
     unsigned long long end;
     unsigned long long time_arr;
     unsigned long long time_list;
     
-    int* array = malloc(sizeof(int)*size);
-    struct list* list_start = malloc(sizeof(struct list));
     
-    //filling arr and list with random ints
-    srand(time(NULL));
-    int x;
-    struct list* current = list_start;
-    for (int i=0;i<size;i++)
-    {
-        x = rand();
-        array[i] = x;
-        current->data = x;
-        if (i == size-1)
-            current->next = NULL;
-        else
-        {
-            current->next = malloc(sizeof(struct list));
-            current = current->next;
-        }
-    }
+    
     //output before sorting
     // current = list_start;
     // for (int i=0;i<size;i++)
@@ -132,7 +114,7 @@ void time_measure(int size)
     time_arr = end - start;
     
     start = __rdtsc();
-    list_start = insert_sort_list(list_start); //fails when size>977 cause two 28's is minimum FIX PLS
+    list_start = insert_sort_list(list_start); 
     end = __rdtsc();
     time_list = end - start;
     //output after sorting and mesuring execution time
@@ -149,6 +131,22 @@ void time_measure(int size)
         printf("arr: %llu list: %llu, array sort faster by %lf%%\n",time_arr,time_list,((double)time_list/time_arr-1)*100);
 }
 
+void fill(int* A, struct list* current, int size)
+{
+    srand(time(NULL));
+    int x;
+    for (int i=0;i<size;i++)
+    {
+        x = rand();
+        A[i] = x;
+        current->data = x;
+        if (i == size-1)
+            current->next = NULL;
+        else
+            current = current->next;
+    }
+}
+
 int main(void)
 {
     int size; //number of elements
@@ -158,10 +156,29 @@ int main(void)
     printf("Enter number of iterations:");
     if (!scanf("%d", &iterations)) printf("Input error");
 
+
+    //malloc array
+    int* array = malloc(sizeof(int)*size);
+
+    //malloc list
+    struct list* list_start = malloc(sizeof(struct list));
+    struct list* current = list_start;
+    for (int i=0;i<size;i++)
+    {
+        if (i == size-1)
+            current->next = NULL;
+        else
+        {
+            current->next = malloc(sizeof(struct list));
+            current = current->next;
+        }
+    }
+
+    //measuring time
     for (int i=0;i<iterations;i++)
     {
-        time_measure(size);
-        //replace mallocs to main before time mesurement!!
+        fill(array,list_start,size);
+        time_measure(size,array,list_start); //fix list_start not global
     }
 
 
