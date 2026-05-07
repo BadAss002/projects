@@ -125,10 +125,10 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
     eip++;
 
     if (arg_ch_ptr[0] == '0') //if arg is number
-        arg = strtol(arg_ch_ptr,NULL,0);
+        arg = strtoul(arg_ch_ptr,NULL,0);
     else    //if arg is registr
         arg = regtoi(arg_ch_ptr);
-    
+    //printf("%x\n",arg);
     if (strchr(regist_ptr,'A'))
     {
         if (strchr(regist_ptr, 'E')) //EAX
@@ -454,7 +454,7 @@ void command_handler(FILE* input_copy)
 int main(void)
 {
     FILE* input;
-    input = fopen("commands.txt","r");
+    input = fopen("test.txt","r");
     command_handler(input);
     //printf("%x\n%x\n%x\n%x\n", model.t32_edx.edx, model.t32_eax.u32_16_eax.t16_eax.ax, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al);
 
