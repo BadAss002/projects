@@ -1,3 +1,7 @@
 mov EAX 0xFFFFFFFE
 add EAX 0x32193129
+shw 0x1234
+mov EAX 0xFFFFFFFE
+add EAX 0x32193129
 shw EAX
+shw EIP

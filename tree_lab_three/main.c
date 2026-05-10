@@ -64,48 +64,12 @@ struct list* insert_sort_list(struct list* list_start)
     return list_start;
 }
 
-int find_max_arr(int * A, int size)
-{
-    int x = A[0];
-    for (int i=0;i<size-1;i++)
-    {
-        if (A[i+1] > x) x = A[i+1]; 
-    }
-
-    return x;
-    // for (int i=0;i<size-1;i++)
-    // {
-    //     int k=i;
-    //     int x=A[i];
-    //     for (int j=i+1;j<size-1;j++)
-    //     {
-    //         if (A[j] > x)
-    //         {
-    //             k=j;
-    //             x=A[k];
-    //         }
-    //         A[k] = A[i];
-    //         A[i] = x;
-    //     }
-    // }
-}
-
-void time_measure(int size, int* array, struct list* list_start)
+struct list* time_measure(int size, int* array, struct list* list_start)
 {
     unsigned long long start;
     unsigned long long end;
     unsigned long long time_arr;
     unsigned long long time_list;
-    
-    
-    
-    //output before sorting
-    // current = list_start;
-    // for (int i=0;i<size;i++)
-    // {
-    //     printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
-    //     current = current->next;
-    // }
 
     //measuring execution time
     start = __rdtsc();
@@ -117,18 +81,13 @@ void time_measure(int size, int* array, struct list* list_start)
     list_start = insert_sort_list(list_start); 
     end = __rdtsc();
     time_list = end - start;
-    //output after sorting and mesuring execution time
-    //printf("---------------------------------\n");
-    // current = list_start;
-    // for (int i=0;i<size;i++)
-    // {
-    //     printf("arr: %d  list: %d list_next: %p\n", array[i], current->data, current->next);
-    //     current = current->next;
-    // }
+
     if (time_arr > time_list)
         printf("arr: %llu list: %llu, list sort faster by %lf%%\n",time_arr,time_list,((double)time_arr/time_list-1)*100);
     else
         printf("arr: %llu list: %llu, array sort faster by %lf%%\n",time_arr,time_list,((double)time_list/time_arr-1)*100);
+
+    return list_start;
 }
 
 void fill(int* A, struct list* current, int size)
@@ -178,7 +137,7 @@ int main(void)
     for (int i=0;i<iterations;i++)
     {
         fill(array,list_start,size);
-        time_measure(size,array,list_start); //fix list_start not global
+        list_start = time_measure(size,array,list_start);
     }
 
 

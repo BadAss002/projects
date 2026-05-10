@@ -418,13 +418,6 @@ void command_handler(FILE* input_copy)
         {
             printf("%#x\n",eip);
             eip++;
-            // for (int i=0;i<4;i++)
-            // {
-            //     command[i] = ' ';
-            //     regist[i] = ' ';
-            // }
-            // for (int i=0;i<11;i++)
-            //     arg_ch[i] = ' ';
             continue;
         }
 
@@ -437,15 +430,23 @@ void command_handler(FILE* input_copy)
         else if (strcmp(command,"sub") == 0)
             commands(regist, arg_ch, 2);
         else if(strcmp(command,"shw") == 0)
-            commands(regist, arg_ch, 3);
+        {
+            if (regist[0] == '0') //shw of const (hex only?)
+            {
+                printf("%s\n",regist);
+                eip++;
+            }
+            else
+                commands(regist, arg_ch, 3);
+        }
 
-        // for (int i=0;i<4;i++)
-        // {
-        //     command[i] = ' ';
-        //     regist[i] = ' ';
-        // }
-        // for (int i=0;i<11;i++)
-        //     arg_ch[i] = ' ';
+        for (int i=0;i<4;i++) //clear
+        {
+            command[i] = ' ';
+            regist[i] = ' ';
+        }
+        for (int i=0;i<11;i++)
+            arg_ch[i] = ' ';
     }
     
 }
@@ -454,7 +455,7 @@ void command_handler(FILE* input_copy)
 int main(void)
 {
     FILE* input;
-    input = fopen("test.txt","r");
+    input = fopen("commands.txt","r");
     command_handler(input);
     //printf("%x\n%x\n%x\n%x\n", model.t32_edx.edx, model.t32_eax.u32_16_eax.t16_eax.ax, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al);
 
