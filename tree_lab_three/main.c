@@ -64,7 +64,7 @@ struct list* insert_sort_list(struct list* list_start)
     return list_start;
 }
 
-struct list* time_measure(int size, int* array, struct list* list_start)
+struct list* time_measure(int size, int* array, struct list* list_start,FILE* output, FILE* output_arr, FILE* output_list)
 {
     unsigned long long start;
     unsigned long long end;
@@ -83,9 +83,15 @@ struct list* time_measure(int size, int* array, struct list* list_start)
     time_list = end - start;
 
     if (time_arr > time_list)
+    {
         printf("arr: %llu list: %llu, list sort faster by %lf%%\n",time_arr,time_list,((double)time_arr/time_list-1)*100);
+    }
     else
+    {
         printf("arr: %llu list: %llu, array sort faster by %lf%%\n",time_arr,time_list,((double)time_list/time_arr-1)*100);
+    }
+
+    fprintf(output,"%lf%% ",((double)time_list/time_arr-1)*100);
 
     return list_start;
 }
@@ -115,6 +121,13 @@ int main(void)
     printf("Enter number of iterations:");
     if (!scanf("%d", &iterations)) printf("Input error");
 
+    FILE* output_arr;
+    FILE* output_list;
+    FILE* output;
+    output = fopen("output.txt", "at");
+    output_arr = fopen("output_arr.txt", "at");
+    output_list = fopen("output_list.txt", "at");
+
 
     //malloc array
     int* array = malloc(sizeof(int)*size);
@@ -137,9 +150,15 @@ int main(void)
     for (int i=0;i<iterations;i++)
     {
         fill(array,list_start,size);
-        list_start = time_measure(size,array,list_start);
+        list_start = time_measure(size,array,list_start,output,output_arr,output_list);
     }
 
+    // fputc('\n', output_arr);
+    // fputc('\n', output_list);
+    fputc('\n', output);
+    fclose(output);
+    fclose(output_arr);
+    fclose(output_list);
 
     return 0;
 }
