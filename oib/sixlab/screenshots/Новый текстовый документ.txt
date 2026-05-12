@@ -1,0 +1,1 @@
+.\upx.exe -d F:\projects\oib\sixlab\GUARD_2.EXE
