@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 int comment_deletion(FILE* f1) {
     FILE* f2 = fopen("temp.wc", "w");
@@ -115,7 +118,28 @@ int comment_deletion(FILE* f1) {
     return 0;
 }
 
-int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr, int prev_ch)
+char variables[100][100];
+int variable_number=0;
+void new_variable(FILE* input)
+{
+    int pos = ftell(input);
+    char ch;
+    int i = 0;
+    while (ch = getc(input))
+    {
+        if (ch != ' ' && ch != '*') break;
+    }
+    do
+    {
+        variables[variable_number][i++] = ch;
+        ch = getc(input);
+    } while (!(ch == ' ' || ch == ';' || ch == '=' || ch == '(' || ch == ')' || ch == '['));
+    variables[variable_number][i] = '\0';
+    variable_number++;
+    fseek(input,pos,SEEK_SET);
+}
+
+void keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr, int prev_ch)
 {
     if (*ch_ptr == 'c' && flags[0] == 0 && isalpha(prev_ch) == 0)
             flags[0]++;
@@ -129,6 +153,7 @@ int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr,
             *ch_ptr = getc(*input_ptr);
             putc(*ch_ptr,*output_ptr);
             flags[0] = 0;
+            new_variable(*input_ptr);
         }
         else
         {
@@ -145,6 +170,7 @@ int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr,
             *ch_ptr = getc(*input_ptr);
             putc(*ch_ptr,*output_ptr);
             flags[1] = 0;
+            new_variable(*input_ptr);
         }
         else
         {
@@ -163,6 +189,7 @@ int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr,
             *ch_ptr = getc(*input_ptr);
             putc(*ch_ptr,*output_ptr);
             flags[2] = 0;
+            new_variable(*input_ptr);
         }
         else
         {
@@ -189,6 +216,7 @@ int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr,
             *ch_ptr = getc(*input_ptr);
             putc(*ch_ptr,*output_ptr);
             flags[3] = 0;
+            new_variable(*input_ptr);
         }
         else
         {
@@ -211,6 +239,7 @@ int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr,
             *ch_ptr = getc(*input_ptr);
             putc(*ch_ptr,*output_ptr);
             flags[4] = 0;
+            new_variable(*input_ptr);
         }
         else
         {
@@ -231,6 +260,7 @@ int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr,
             *ch_ptr = getc(*input_ptr);
             putc(*ch_ptr,*output_ptr);
             flags[5] = 0;
+            //new_variable(*input_ptr);
         }
         else
         {
@@ -253,10 +283,30 @@ int keyword_check(FILE** input_ptr, FILE**output_ptr, char* flags, char* ch_ptr,
             *ch_ptr = getc(*input_ptr);
             putc(*ch_ptr,*output_ptr);
             flags[6] = 0;
+            //new_variable(*input_ptr);
         }
         else
         {
             flags[6] = 0;
+        }
+
+        if (*ch_ptr == 'F' && flags[7] == 0 && isalpha(prev_ch) == 0)
+            flags[7]++;
+        else if (*ch_ptr == 'I' && flags[7] == 1)
+            flags[7]++;
+        else if (*ch_ptr == 'L' && flags[7] == 2)
+            flags[7]++;
+        else if (*ch_ptr == 'E' && flags[7] == 3)
+        {
+            putc(*ch_ptr,*output_ptr);
+            *ch_ptr = getc(*input_ptr);
+            putc(*ch_ptr,*output_ptr);
+            flags[7] = 0;
+            new_variable(*input_ptr);
+        }
+        else
+        {
+            flags[7] = 0;
         }
 }
 
@@ -305,6 +355,43 @@ void space_deletion(FILE* input)
     rename("temp.wc", "prog.c");
 }
 
+char new_name[100];
+void name_generator(int a)
+{
+    char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
+    srand(a);
+    int x;
+    for (int i=0;i<100;i++)
+    {
+        x = rand()%26;
+        new_name[i] = alphabet[x];
+        if (i == 99) new_name[100] = '\0';
+    }  
+}
+
+void variable_rename(FILE *input)
+{
+    char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
+    FILE* output;
+    output = fopen("temp.wc", "w");
+    char str[10000]; //not enough memory? buy more RAM LOL
+    char *ptr;
+    while (fgets(str, 10000, input))
+    {
+        for (int i=0;i<variable_number;i++)
+        {
+            //printf("%s %s\n", str, variables[i]);
+            ptr = strstr(str, variables[i]);
+            if (ptr == NULL) continue;
+            //name_generator(i);
+            for (int j=0;j<10000;j++)
+            {
+                if (str[j])
+            }
+        }
+    }   
+}
+
 int main(void)
 {
     FILE* input;
@@ -315,6 +402,14 @@ int main(void)
     input = fopen("prog.c", "r"); //reopen after comment_deletion
 
     space_deletion(input);
+    input = fopen("prog.c", "r"); //reopen after space_deletion
+
+    variable_rename(input); //допиши переименование перменных и добавь мусорных функций
+
+    // for (int i =0;i<100;i++)
+    // {
+    //     printf("%s\n", variables[i]);
+    // }
 
 
     return 0;
