@@ -3,9 +3,8 @@
 #include <stdlib.h>
 #define size 82
 
-char operands[] = "abcdefghijklmopqrstuvwxyz0123456789";
+char operands[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 char operators[] = "+-/*";
-int error = 0;
 
 struct stack{
     long long arr[size];
@@ -32,8 +31,7 @@ long long pop()
 {
     if (stack.top == -1)
     {
-        printf("error\n");
-        error = 1;
+        printf("Stack Overflow\n");
         return -1;
     }
     long long popped = stack.arr[stack.top];
@@ -44,6 +42,56 @@ long long pop()
 long long peek()
 {
     return stack.arr[stack.top];
+}
+
+int string_check(char * line)
+{
+    int lcount = 0;
+    int rcount = 0;
+    int numb_count = 0;
+    for (int i=0;i<strlen(line);i++) // проверка количества открывающих и закрывающих скобок
+        {
+            if (line[i] == '(') lcount++;
+            if (line[i] == ')') rcount++;
+            if (strchr(operands,line[i])) numb_count++; //если нет чисел и букв
+            //if (strchr(operators,line[i]) && strchr(operators,line[i+1]) && i != strlen(line)-1) return -1; // ++ ** +- -- и тд
+            if (strchr(operators,line[i])) // ++ ** +- -- +) *) +___+
+            {
+                int j=i+1;
+                while (line[j] != '\0')
+                {
+                    if (strchr(operators,line[j]) || line[j] == ')') return -1;
+                    else if (strchr(operands,line[j]) || line[j] == '(') break;
+                    j++;
+                }
+            }
+            //if (strchr(operands,line[i]) && strchr(operands,line[i+1]) && i != strlen(line)-1) return -1;
+            if (strchr(operands,line[i])) // 11 aa bb 23 b( 1_____2
+            {
+                int j=i+1;
+                while (line[j] != '\0')
+                {
+                    if (strchr(operands,line[j]) || line[j] == '(') return -1;
+                    else if (strchr(operators,line[j]) || line[j] == ')') break;
+                    j++;
+                }
+            }
+            //if (line[i] == '/' && line[i+1] == '0') return -1; //деление на ноль
+            if (line[i] == '/') // /0
+            {
+                int j=i+1;
+                while (line[j] != '\0')
+                {
+                    if (line[j] == '0') return -1;
+                    else if (strchr(operands,line[j]) || line[j] == '(') break;
+                    j++;
+                }
+            }
+        }
+    if (lcount != rcount || numb_count == 0)
+    {
+        return -1;
+    }
 }
 
 int main(void)
@@ -60,21 +108,8 @@ int main(void)
 
     while (fgets(line,size,stdin))
     {
-        int lcount = 0;
-        int rcount = 0;
-        int numb_count = 0;
-        error = 0;
-        for (int i=0;i<strlen(line);i++) // проверка количества открывающих и закрывающих скобок
-        {
-            if (line[i] == '(') lcount++;
-            if (line[i] == ')') rcount++;
-            if (strchr(operands,line[i])) numb_count++; //если нет чисел
-            if (strchr(operators,line[i]) && strchr(operators,line[i+1])) error = 1; // ++ ** +- -- и тд
-            if (strchr(operands,line[i]) != NULL && strchr(operands,line[i+1]) != NULL) error = 1; // 11 aa bb 23 и тд
-            if (line[i] == '/' && line[i+1] == '0') error = 1;
-        }
 
-        if (lcount != rcount || numb_count == 0 || error == 1)
+        if (string_check(line) == -1)
         {
             printf("error\n");
             continue;
@@ -98,7 +133,7 @@ int main(void)
                 output_str[place] = ch;
                 place++;
             }
-            else if (ch != ' ' && strchr(operators,ch))
+            else if (strchr(operators,ch))
             {
                 while (stack.top != -1 && strchr(operators,peek()) && priority(peek()) >= priority(ch))
                 {
@@ -115,21 +150,15 @@ int main(void)
             {
                 while (peek() != '(') 
                 {
-                    if (stack.top == -1) 
-                    {
-                        printf("error\n");
-                        error = 1;
-                    }
                     output_str[place] = pop();
                     place++;
                 }
                 pop();
             }
-            else if (ch != ' ' && strchr(operands,ch) == NULL && strchr(operators,ch) == NULL)
-            {
-                printf("error\n");
-                error = 1;
-            }
+            // else if (ch != ' ' && strchr(operands,ch) == NULL && strchr(operators,ch) == NULL)
+            // {
+            //     printf("error\n");
+            // }
         }
         output_str[place] = '\0';
         place = 0;
@@ -139,60 +168,66 @@ int main(void)
         long long a,b;
         int fl = 1;
         long long big_ch;
+        int div_by_zero = 0;
 
-        if (error == 1) continue;
-
-        for (int i=0;i<25;i++) //проверка на наличие латинских букв
+        for (int i=0;i<26;i++) //проверка на наличие латинских букв
         {
             if (strchr(line,operands[i]) != NULL) fl = 0;
         }
-        if (fl == 1)
+
+        for (int i=0;i<=strlen(output_str);i++)
         {
-            for (int i=0;i<=strlen(output_str);i++)
+            big_ch = output_str[i];
+            if (big_ch == '\n' || big_ch == '\0')
             {
-                big_ch = output_str[i];
-                if (big_ch == '\n' || big_ch == '\0')
-                {
-                    break;
-                }
-                else if (strchr(operands,big_ch))
-                {
-                    push(big_ch - '0');
-                }
-                else if (strchr(operators,big_ch))
-                {
-                    b = pop();
-                    a = pop();
-                    if (error == 1) break;
-                    //printf("%d %d\n", a,b);
-                    if (big_ch == '+')
-                    {
-                        push(a+b);
-                    }
-                    else if (big_ch == '-')
-                    {
-                        push(a-b);
-                    }
-                    else if (big_ch == '*')
-                    {
-                        push(a*b);
-                    }
-                    else if (big_ch == '/')
-                    {
-                        push(a/b);
-                    }
-                }
+                break;
             }
-            if (error == 0)
+            else if (strchr(operands,big_ch))
             {
+                push(big_ch - '0');
+            }
+            else if (strchr(operators,big_ch))
+            {
+                b = pop();
                 a = pop();
-                printf("%s = %lld\n", output_str, a);
+                if (big_ch == '+')
+                {
+                    push(a+b);
+                }
+                else if (big_ch == '-')
+                {
+                    push(a-b);
+                }
+                else if (big_ch == '*')
+                {
+                    push(a*b);
+                }
+                else if (big_ch == '/')
+                {
+                    if (b == 0)
+                    {
+                        printf("error\n");
+                        //printf("%s\n", output_str);
+                        div_by_zero = 1;
+                        break;
+                    }
+                    push(a/b);
+                }
             }
-        }   
-        else
-        {
-            printf("%s\n", output_str);
         }
+
+        if (div_by_zero == 0 && fl) //если нет букв и деления на ноль
+        {    
+            a = pop();
+            printf("%s = %lld\n", output_str, a);
+        }
+        else if (div_by_zero == 0 && !fl) //если есть буквы и нет деления на ноль
+            printf("%s\n", output_str);
+        else //деление на ноль есть
+            continue;
+
+        //clear stack
+        while (stack.top != -1) pop();
     }
 
 
