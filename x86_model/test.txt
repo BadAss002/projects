@@ -1,7 +1,6 @@
-mov EAX 0xFFFFFFFE
-add EAX 0x32193129
-shw 0x1234
-mov EAX 0xFFFFFFFE
-add EAX 0x32193129
-shw EAX
+mov lol 0x10
+shw DSADASD
 shw EIP
+shw ECH
+
+add EIP 0xFFFFFFFFFFFFFFF

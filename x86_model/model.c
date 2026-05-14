@@ -52,86 +52,111 @@ union t32_edx{
 
 }model;
 
+int error = 0;
+
 uint32_t eip;
 
 uint32_t regtoi(char * regist_ptr) //converts string registr to int
 {
     uint32_t number;
+    int fl = 1;
     if (strchr(regist_ptr,'A'))
         {
-            if (strchr(regist_ptr, 'E')) //EAX
+            if (strcmp(regist_ptr, "EAX") == 0) //EAX
             {
                 number = model.t32_eax.eax;
             }
-            else if (strchr(regist_ptr,'X')) //AX
+            else if (strcmp(regist_ptr,"AX") == 0) //AX
             {
                 number = model.t32_eax.u32_16_eax.t16_eax.ax;
             }
-            else if (strchr(regist_ptr,'H')) //AH
+            else if (strcmp(regist_ptr,"AH") == 0) //AH
             {
                 number = model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah;
             }
-            else //AL
+            else if (strcmp(regist_ptr,"AL") == 0)//AL
             {
                 number = model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al;
             }
+            else
+                fl=0;
         }
     else if (strchr(regist_ptr,'C'))
     {
-        if (strchr(regist_ptr, 'E')) //ECX
+        if (strcmp(regist_ptr, "ECX") == 0) //ECX
         {
             number = model.t32_ecx.ecx;
         }
-        else if (strchr(regist_ptr,'X')) //CX
+        else if (strcmp(regist_ptr,"CX") == 0) //CX
         {
             number = model.t32_ecx.u32_16_ecx.t16_ecx.cx;
 
         }
-        else if (strchr(regist_ptr,'H')) //CH
+        else if (strcmp(regist_ptr,"CH") == 0) //CH
         {
             number = model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch;
         }
-        else //CL
+        else if (strcmp(regist_ptr,"CL") == 0)//CL
         {
             number = model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl;
         }
+        else
+            fl=0;
     }
-    else
+    else if (strchr(regist_ptr,'D'))
     {
-        if (strchr(regist_ptr, 'E')) //EDX
+        if (strcmp(regist_ptr, "EDX") == 0) //EDX
         {
             number = model.t32_edx.edx;
         }
-        else if (strchr(regist_ptr,'X')) //DX
+        else if (strcmp(regist_ptr,"DX") == 0) //DX
         {
             number = model.t32_edx.u32_16_edx.t16_edx.dx;
         }
-        else if (strchr(regist_ptr,'H')) //DH
+        else if (strcmp(regist_ptr,"DH") == 0) //DH
         {
             number = model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh;
         }
-        else //DL
+        else if (strcmp(regist_ptr,"DL") == 0)//DL
         {
             number = model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl;
         }
+        else
+            fl=0;
     }
+    else
+        fl = 0;
 
-    return number;
+    if (fl==1)
+        return number;
+    else
+    {
+        error = 1;
+        return -1;
+    }
 }
 
 void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-sub 3-shw
 {
     uint32_t arg;
     eip++;
-
-    if (arg_ch_ptr[0] == '0') //if arg is number
-        arg = strtoul(arg_ch_ptr,NULL,0);
-    else    //if arg is registr
-        arg = regtoi(arg_ch_ptr);
-    //printf("%x\n",arg);
+    if (strlen(regist_ptr) > 3) return; //if regist is invalid by length
+    if (arg_ch_ptr[0] != ' ') //is there arg
+    {
+        if (arg_ch_ptr[0] == '0') //if arg is number
+            arg = strtoul(arg_ch_ptr,NULL,0);
+        else    //if arg is registr
+            arg = regtoi(arg_ch_ptr);
+    }
+    //printf("%d\n",strlen(regist_ptr));
+    if (error == 1) //if arg is invalid
+    {
+        error = 0;
+        return;
+    }
     if (strchr(regist_ptr,'A'))
     {
-        if (strchr(regist_ptr, 'E')) //EAX
+        if (strcmp(regist_ptr, "EAX") == 0) //EAX
         {
             switch (command)
             {
@@ -150,7 +175,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else if (strchr(regist_ptr,'X')) //AX
+        else if (strcmp(regist_ptr,"AX") == 0) //AX
         {
             switch (command)
             {
@@ -169,7 +194,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else if (strchr(regist_ptr,'H')) //AH
+        else if (strcmp(regist_ptr,"AH") == 0) //AH
         {
             switch (command)
             {
@@ -188,7 +213,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else //AL
+        else if (strcmp(regist_ptr,"AL") == 0)//AL
         {
             switch (command)
             {
@@ -210,7 +235,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
     }
     else if (strchr(regist_ptr,'C'))
     {
-        if (strchr(regist_ptr, 'E')) //ECX
+        if (strcmp(regist_ptr, "ECX") == 0) //ECX
         {
             switch (command)
             {
@@ -229,7 +254,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else if (strchr(regist_ptr,'X')) //CX
+        else if (strcmp(regist_ptr,"CX") == 0) //CX
         {
             switch (command)
             {
@@ -248,7 +273,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else if (strchr(regist_ptr,'H')) //CH
+        else if (strcmp(regist_ptr,"CH") == 0) //CH
         {
             switch (command)
             {
@@ -267,7 +292,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else //CL
+        else if (strcmp(regist_ptr,"CL") == 0)//CL
         {
             switch (command)
             {
@@ -287,9 +312,9 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             }
         }
     }
-    else
+    else if (strchr(regist_ptr,'D'))
     {
-        if (strchr(regist_ptr, 'E')) //EDX
+        if (strcmp(regist_ptr, "EDX") == 0) //EDX
         {
             switch (command)
             {
@@ -308,7 +333,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else if (strchr(regist_ptr,'X')) //DX
+        else if (strcmp(regist_ptr,"DX") == 0) //DX
         {
             switch (command)
             {
@@ -327,7 +352,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else if (strchr(regist_ptr,'H')) //DH
+        else if (strcmp(regist_ptr,"DH") == 0) //DH
         {
             switch (command)
             {
@@ -346,7 +371,7 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
                 break;
             }
         }
-        else //DL
+        else if (strcmp(regist_ptr,"DL") == 0)//DL
         {
             switch (command)
             {
@@ -418,6 +443,13 @@ void command_handler(FILE* input_copy)
         {
             printf("%#x\n",eip);
             eip++;
+            for (int i=0;i<4;i++) //clear
+            {
+                command[i] = ' ';
+                regist[i] = ' ';
+            }
+            for (int i=0;i<11;i++)
+                arg_ch[i] = ' ';
             continue;
         }
 
@@ -455,7 +487,7 @@ void command_handler(FILE* input_copy)
 int main(void)
 {
     FILE* input;
-    input = fopen("commands.txt","r");
+    input = fopen("test.txt","r");
     command_handler(input);
     //printf("%x\n%x\n%x\n%x\n", model.t32_edx.edx, model.t32_eax.u32_16_eax.t16_eax.ax, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al);
 
