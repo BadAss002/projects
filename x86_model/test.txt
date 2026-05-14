@@ -1,6 +1,7 @@
-mov lol 0x10
-shw DSADASD
 shw EIP
-shw ECH
+mov EAX 0xffffffff
+shw EAX
 
-add EIP 0xFFFFFFFFFFFFFFF
+
+shw EIP
+shw EIP

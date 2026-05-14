@@ -139,7 +139,6 @@ uint32_t regtoi(char * regist_ptr) //converts string registr to int
 void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-sub 3-shw
 {
     uint32_t arg;
-    eip++;
     if (strlen(regist_ptr) > 3) return; //if regist is invalid by length
     if (arg_ch_ptr[0] != ' ') //is there arg
     {
@@ -162,15 +161,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_eax.eax = arg%a;
+                eip++;
                 break;
             case 1:
                 model.t32_eax.eax = (model.t32_eax.eax+arg)%a;
+                eip++;
                 break;
             case 2:
                 model.t32_eax.eax = (model.t32_eax.eax-arg)%a;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_eax.eax);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -181,15 +185,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_eax.u32_16_eax.t16_eax.ax = arg%b;
+                eip++;
                 break;
             case 1:
                 model.t32_eax.u32_16_eax.t16_eax.ax = (model.t32_eax.u32_16_eax.t16_eax.ax+arg)%b;
+                eip++;
                 break;
             case 2:
                 model.t32_eax.u32_16_eax.t16_eax.ax = (model.t32_eax.u32_16_eax.t16_eax.ax-arg)%b;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_eax.u32_16_eax.t16_eax.ax);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -200,15 +209,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah = arg%c;
+                eip++;
                 break;
             case 1:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah = (model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah+arg)%c;
+                eip++;
                 break;
             case 2:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah = (model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah-arg)%c;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -219,15 +233,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al = arg%c;
+                eip++;
                 break;
             case 1:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al = (model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al+arg)%c;
+                eip++;
                 break;
             case 2:
                 model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al = (model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al-arg)%c;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -241,15 +260,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_ecx.ecx = arg%a;
+                eip++;
                 break;
             case 1:
                 model.t32_ecx.ecx = (model.t32_ecx.ecx+arg)%a;
+                eip++;
                 break;
             case 2:
                 model.t32_ecx.ecx = (model.t32_ecx.ecx-arg)%a;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_ecx.ecx);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -260,15 +284,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_ecx.u32_16_ecx.t16_ecx.cx = arg%b;
+                eip++;
                 break;
             case 1:
                 model.t32_ecx.u32_16_ecx.t16_ecx.cx = (model.t32_ecx.u32_16_ecx.t16_ecx.cx+arg)%b;
+                eip++;
                 break;
             case 2:
                 model.t32_ecx.u32_16_ecx.t16_ecx.cx = (model.t32_ecx.u32_16_ecx.t16_ecx.cx-arg)%b;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_ecx.u32_16_ecx.t16_ecx.cx);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -279,15 +308,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch = arg%c;
+                eip++;
                 break;
             case 1:
                 model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch = (model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch+arg)%c;
+                eip++;
                 break;
             case 2:
                 model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch = (model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch-arg)%c;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.ch);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -298,15 +332,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl = arg%c;
+                eip++;
                 break;
             case 1:
                 model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl = (model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl+arg)%c;
+                eip++;
                 break;
             case 2:
                 model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl = (model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl-arg)%c;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_ecx.u32_16_ecx.t16_ecx.u16_8_ecx.cl);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -320,15 +359,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_edx.edx = arg%a;
+                eip++;
                 break;
             case 1:
                 model.t32_edx.edx = (model.t32_edx.edx+arg)%a;
+                eip++;
                 break;
             case 2:
                 model.t32_edx.edx = (model.t32_edx.edx-arg)%a;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_edx.edx);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -339,15 +383,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_edx.u32_16_edx.t16_edx.dx = arg%b;
+                eip++;
                 break;
             case 1:
                 model.t32_edx.u32_16_edx.t16_edx.dx = (model.t32_edx.u32_16_edx.t16_edx.dx+arg)%b;
+                eip++;
                 break;
             case 2:
                 model.t32_edx.u32_16_edx.t16_edx.dx = (model.t32_edx.u32_16_edx.t16_edx.dx-arg)%b;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_edx.u32_16_edx.t16_edx.dx);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -358,15 +407,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh = arg%c;
+                eip++;
                 break;
             case 1:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh = (model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh+arg)%c;
+                eip++;
                 break;
             case 2:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh = (model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh-arg)%c;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dh);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -377,15 +431,20 @@ void commands(char* regist_ptr, char* arg_ch_ptr, int command) //0-mov 1-add 2-s
             {
             case 0:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl = arg%c;
+                eip++;
                 break;
             case 1:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl = (model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl+arg)%c;
+                eip++;
                 break;
             case 2:
                 model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl = (model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl-arg)%c;
+                eip++;
                 break;
             case 3:
                 printf("0x%x\n", model.t32_edx.u32_16_edx.t16_edx.u16_8_edx.dl);
+                eip++;
+                break;
             default:
                 break;
             }
@@ -487,7 +546,7 @@ void command_handler(FILE* input_copy)
 int main(void)
 {
     FILE* input;
-    input = fopen("test.txt","r");
+    input = fopen("commands.txt","r");
     command_handler(input);
     //printf("%x\n%x\n%x\n%x\n", model.t32_edx.edx, model.t32_eax.u32_16_eax.t16_eax.ax, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.ah, model.t32_eax.u32_16_eax.t16_eax.u16_8_eax.al);
 
