@@ -77,16 +77,16 @@ int string_check(char * line)
                 }
             }
             //if (line[i] == '/' && line[i+1] == '0') return -1; //деление на ноль
-            if (line[i] == '/') // /0
-            {
-                int j=i+1;
-                while (line[j] != '\0')
-                {
-                    if (line[j] == '0') return -1;
-                    else if (strchr(operands,line[j]) || line[j] == '(') break;
-                    j++;
-                }
-            }
+            // if (line[i] == '/') // /0
+            // {
+            //     int j=i+1;
+            //     while (line[j] != '\0')
+            //     {
+            //         if (line[j] == '0') return -1;
+            //         else if (strchr(operands,line[j]) || line[j] == '(') break;
+            //         j++;
+            //     }
+            // }
         }
     if (lcount != rcount || numb_count == 0)
     {
@@ -174,44 +174,46 @@ int main(void)
         {
             if (strchr(line,operands[i]) != NULL) fl = 0;
         }
-
-        for (int i=0;i<=strlen(output_str);i++)
+        if (fl)
         {
-            big_ch = output_str[i];
-            if (big_ch == '\n' || big_ch == '\0')
+            for (int i=0;i<=strlen(output_str);i++)
             {
-                break;
-            }
-            else if (strchr(operands,big_ch))
-            {
-                push(big_ch - '0');
-            }
-            else if (strchr(operators,big_ch))
-            {
-                b = pop();
-                a = pop();
-                if (big_ch == '+')
+                big_ch = output_str[i];
+                if (big_ch == '\n' || big_ch == '\0')
                 {
-                    push(a+b);
+                    break;
                 }
-                else if (big_ch == '-')
+                else if (strchr(operands,big_ch))
                 {
-                    push(a-b);
+                    push(big_ch - '0');
                 }
-                else if (big_ch == '*')
+                else if (strchr(operators,big_ch))
                 {
-                    push(a*b);
-                }
-                else if (big_ch == '/')
-                {
-                    if (b == 0)
+                    b = pop();
+                    a = pop();
+                    if (big_ch == '+')
                     {
-                        printf("error\n");
-                        //printf("%s\n", output_str);
-                        div_by_zero = 1;
-                        break;
+                        push(a+b);
                     }
-                    push(a/b);
+                    else if (big_ch == '-')
+                    {
+                        push(a-b);
+                    }
+                    else if (big_ch == '*')
+                    {
+                        push(a*b);
+                    }
+                    else if (big_ch == '/')
+                    {
+                        if (b == 0)
+                        {
+                            printf("error\n");
+                            //printf("%s\n", output_str);
+                            div_by_zero = 1;
+                            break;
+                        }
+                        push(a/b);
+                    }
                 }
             }
         }
@@ -221,7 +223,7 @@ int main(void)
             a = pop();
             printf("%s = %lld\n", output_str, a);
         }
-        else if (div_by_zero == 0 && !fl) //если есть буквы и нет деления на ноль
+        else if (fl == 0) //если есть буквы
             printf("%s\n", output_str);
         else //деление на ноль есть
             continue;
