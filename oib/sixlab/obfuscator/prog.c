@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <string.h> 
+#include <string.h>
 #include <locale.h>
 #define MAX_LEN 10000
-int check_password(const char *input_copy){FILE *file=fopen("password.txt","r");if(file==NULL){printf("Error\n");return 0;}char a;char real_password[MAX_LEN];fgets(real_password,MAX_LEN,file);fclose(file);real_password[strcspn(real_password,"\n")]=0;if(strcmp(input_copy,real_password)==0){return 1;}else{return 0;}}int main(){char input[MAX_LEN];printf("Enter password: ");fgets(input,MAX_LEN,stdin);input[strcspn(input,"\n")]=0;if(check_password(input)){printf("Access\n");}else{printf("NO Access\n");}return 0;}
+int check_password(const char *input){FILE*file=fopen("password.txt","r");if(file==NULL){printf("Error\n");return 0;}char real_password[MAX_LEN];fgets(real_password,MAX_LEN,file);fclose(file);real_password[strcspn(real_password,"\n")]=0;if(strcmp(input,real_password)==0){return 1;}else {return 0;}}int main(){char input[MAX_LEN];printf("Enter password: ");fgets(input,MAX_LEN,stdin);input[strcspn(input,"\n")]=0;if(check_password(input)){printf("Access\n");}else {printf("NO Access\n");}return 0;}
