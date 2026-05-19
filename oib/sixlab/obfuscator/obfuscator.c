@@ -391,6 +391,50 @@ void keyword_check(FILE** input_ptr, FILE** output_ptr, char* flags, char* ch_pt
     {
         flags[9] = 0;
     }
+
+    if (*ch_ptr == 'd' && flags[10] == 0 && isalpha(prev_ch) == 0)
+        {flags[10]++;}
+    else if (*ch_ptr == 'o' && flags[10] == 1)
+        {flags[10]++;}
+    else if (*ch_ptr == 'u' && flags[10] == 2)
+        {flags[10]++;}
+    else if (*ch_ptr == 'b' && flags[10] == 3)
+        {flags[10]++;}
+    else if (*ch_ptr == 'l' && flags[10] == 4)
+        {flags[10]++;}
+    else if (*ch_ptr == 'e' && flags[10] == 5)
+    {
+        flags[10]++;
+    }
+    else if (*ch_ptr == ' ' && flags[10] == 6)
+    {
+        fputc(*ch_ptr, *output_ptr);
+        flags[10] = 0;
+    }
+    else
+    {
+        flags[10] = 0;
+    }
+
+    if (*ch_ptr == 'f' && flags[11] == 0 && isalpha(prev_ch) == 0)
+        {flags[11]++;}
+    else if (*ch_ptr == 'l' && flags[11] == 1)
+        {flags[11]++;}
+    else if (*ch_ptr == 'o' && flags[11] == 2)
+        {flags[11]++;}
+    else if (*ch_ptr == 'a' && flags[11] == 3)
+        {flags[11]++;}
+    else if (*ch_ptr == 't' && flags[11] == 4)
+        {flags[11]++;}
+    else if (*ch_ptr == ' ' && flags[11] == 5)
+    {
+        fputc(*ch_ptr, *output_ptr);
+        flags[11] = 0;
+    }
+    else
+    {
+        flags[11] = 0;
+    }
 }
 
 void space_deletion(FILE* input)
@@ -398,8 +442,8 @@ void space_deletion(FILE* input)
     FILE* output;
     output = fopen("temp.wc", "w");
 
-    char flags[10];
-    for (int i = 0; i < 10; i++)
+    char flags[100];
+    for (int i = 0; i < 100; i++)
     {
         flags[i] = 0;
     }
@@ -504,9 +548,9 @@ int main()
     input = fopen("prog.c", "r"); //reopen after space_deletion
 
     variable_rename(input);
-    //input = fopen("prog.c", "a+"); //reopen after variable_rename
+    input = fopen("prog.c", "a+"); //reopen after variable_rename
 
-    //random_func_insert(input);
+    random_func_insert(input);
 
     // for (int i =0;i<100;i++)
     // {
