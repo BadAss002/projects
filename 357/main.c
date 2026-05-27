@@ -13,6 +13,18 @@ struct queue {
     struct queue* next;
 };
 
+unsigned long long pow_ull(unsigned long long x, unsigned long long y)
+{
+    unsigned long long result = 1;
+    for (int i=0;i<y;i++)
+    {
+        result *= x;
+        if (result > result*x) return 0; //overflow
+    }
+
+    return x;
+}
+
 
 //calculation of a, b, c in number
 void calculate_abc(unsigned long long number, int* abc)
@@ -134,21 +146,50 @@ void insert(struct queue* node, unsigned long long number_to_insert, int n, int*
     *current_elements_number_ptr++;
 }
 
+
+int calculate_next_number(unsigned long long start_number, int start_n, int* abc)
+{
+    int abc_sum = 0;
+    unsigned long long next_number;
+    unsigned long long diff;
+    for (int i=0;i<3;i++) abc_sum+=abc[i];
+
+    for (int i=0;i<=abc_sum;i++)
+    {
+        abc_sum -= i;
+        for (int j=0;j<=abc_sum;j++)
+        {
+            abc_sum -= j;
+            for (int k=0;k<=abc_sum;k++)
+            {
+                next_number;
+            }
+        }
+    }
+
+}
+
+
 int main(void)
 {
+    printf("%llu", pow_ull(2,5));
+    return 0;
+
+
     //initialize tree
-    struct queue* start = (struct queue*)malloc(sizeof(struct queue));
-    start->a = 1;
-    start->b = 0;
-    start->c = 0;
-    start->number = FIRST;
-    start->n = 1;
-    start->next = NULL;
+    struct queue* list_start = (struct queue*)malloc(sizeof(struct queue));
+    list_start->a = 1;
+    list_start->b = 0;
+    list_start->c = 0;
+    list_start->number = FIRST;
+    list_start->n = 1;
+    list_start->next = NULL;
 
     int n;
     int current_elements_number = 1; //кол-во элементов в очереди
+    unsigned long long start_number;
     unsigned long long next_number;
-    int start_n = 0; //номер в последовательности откуда начинаем поиск
+    int start_n;
     int abc[3] = {-1,-1,-1};
     int overflow = 0;
     while (1) 
@@ -162,80 +203,32 @@ int main(void)
             continue;
         }
 
-        next_number = search_nearest_number(n,start,&start_n);
+        start_number = search_nearest_number(n,list_start,&start_n);
 
-        if (next_number == 0) continue;
+        next_number = calculate_next_number(start_number, start_n, abc);
 
-        if (start_n > 0)
+        if (start_number == 0) continue;
+
+        if (overflow == 1)
         {
-            while (start_n != n)
-            {
-                if (next_number == ULLONG_MAX) //change it
-                {
-                    overflow = 1;
-                    break;
-                }
-                next_number++;
-                calculate_abc(next_number,abc);
-                if (abc[0] != -1) start_n++;
-            }
-
-            if (overflow == 1)
-            {
-                printf("overflow\n");
-                overflow = 0;
-                continue;
-            }
-
-            printf("%llu\n", next_number);
-
-            if (current_elements_number >= ELEMENTS_IN_MEMORY)
-            {
-                start = delete_element(start);
-                insert(start,next_number,n,abc,&current_elements_number);
-            }
-            else
-            {
-                insert(start,next_number,n,abc,&current_elements_number);
-            }
+            printf("overflow\n");
+            overflow = 0;
+            continue;
         }
-        else //идём влево
+
+        printf("%llu\n", next_number);
+
+        if (current_elements_number >= ELEMENTS_IN_MEMORY)
         {
-            start_n = -start_n;
-
-            while (start_n != n)
-            {
-                if (next_number == 1)
-                {
-                    overflow = 1;
-                    break;
-                }
-                next_number--;
-                calculate_abc(next_number,abc);
-                if (abc[0] != -1) start_n++;
-            }
-
-            if (overflow == 1)
-            {
-                printf("%llu\n", 3);
-                overflow = 0;
-                continue;
-            }
-
-            printf("%llu\n", next_number);
-
-            if (current_elements_number >= ELEMENTS_IN_MEMORY)
-            {
-                start = delete_element(start);
-                insert(start,next_number,n,abc,&current_elements_number);
-            }
-            else
-            {
-                insert(start,next_number,n,abc,&current_elements_number);
-            }
+            list_start = delete_element(list_start);
+            insert(list_start,next_number,n,abc,&current_elements_number);
         }
+        else
+        {
+            insert(list_start,next_number,n,abc,&current_elements_number);
+        }
+        
     }
-
 
 
     return 0;
