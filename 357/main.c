@@ -85,7 +85,7 @@ void get_input(int* n_ptr)
 }
 
 
-unsigned long long search_nearest_number(int n, struct queue* node, int* start_n)
+unsigned long long search_nearest_number(int n, struct queue* node, int* start_n, int* abc)
 {
     int shift = 10000; //разница между n и node->n
     unsigned long long nearest_number;
@@ -102,6 +102,9 @@ unsigned long long search_nearest_number(int n, struct queue* node, int* start_n
             shift = n - node->n;
             nearest_number = node->number;
             *start_n = node->n;
+            abc[0] = node->a;
+            abc[1] = node->b;
+            abc[2] = node->c;
         }
         node = node->next;
     }
@@ -110,6 +113,9 @@ unsigned long long search_nearest_number(int n, struct queue* node, int* start_n
     {
         *start_n = 1;
         nearest_number = 3;
+        abc[0] = 1;
+        abc[1] = 0;
+        abc[2] = 0;
     }
 
     return nearest_number;
@@ -155,41 +161,32 @@ unsigned long long calculate_next_number(unsigned long long start_number, int* s
     unsigned long long threes,fives,sevens;
     int start_abc[3] = {abc[0],abc[1],abc[2]};
     for (int i=0;i<3;i++) abc_sum+=abc[i];
+
     int fl=1;
 
     while (fl)
     {
         for (int i=0;i<=abc_sum;i++)
         {
+            threes = pow_ull(FIRST,i);
+            if (threes == 0) break;
             for (int j=0;j<=abc_sum-i;j++)
             {
+                fives = pow_ull(SECOND,j);
+                if (fives == 0) break;
                 for (int k=0;k<=abc_sum-j-i;k++)
                 {
-                    if (i+j+k == 0 || (i<start_abc[0] && j<start_abc[1] && k<start_abc[2])) continue;
-
-                    threes = pow_ull(FIRST,i);
-                    fives = pow_ull(SECOND,j);
                     sevens = pow_ull(THIRD,k);
+                    if (sevens == 0) break;
 
-                    if (threes == 0 || fives == 0 || sevens == 0 
-                        || (ULLONG_MAX/threes)/fives < sevens
-                        || (ULLONG_MAX/threes)/sevens < fives
-                        || (ULLONG_MAX/fives)/sevens < threes) //overflow
-                    {
-                        continue;
-                    }
+                    if (i+j+k == 0 || (i<start_abc[0] && j<start_abc[1] && k<start_abc[2])) continue;
 
                     candidate = threes*fives*sevens;
 
+                    if ((ULLONG_MAX/threes)/fives < sevens) continue;
+
                     if (candidate < next_number && candidate > start_number) 
                     {
-                        if (threes == 0 || fives == 0 || sevens == 0 
-                        || (ULLONG_MAX/threes)/fives < sevens
-                        || (ULLONG_MAX/threes)/sevens < fives
-                        || (ULLONG_MAX/fives)/sevens < threes) //overflow
-                        {
-                            return 0;
-                        }
                         next_number = candidate;
                         abc[0] = i;
                         abc[1] = j;
@@ -197,6 +194,8 @@ unsigned long long calculate_next_number(unsigned long long start_number, int* s
                     }
 
                     if (next_number != ULLONG_MAX && i>start_abc[0] && j> start_abc[1] && k > start_abc[2]) fl = 0;
+
+                    printf("%d %d %d %llu\n", i,j,k, start_number);
                 }
             }
         }
@@ -205,7 +204,8 @@ unsigned long long calculate_next_number(unsigned long long start_number, int* s
 
     (*start_n)++;
 
-    return next_number;
+    if (next_number != ULLONG_MAX) return next_number;
+    else return 0;
 }
 
 
@@ -241,7 +241,7 @@ int main(void)
             continue;
         }
 
-        start_number = search_nearest_number(n,list_start,&start_n);
+        start_number = search_nearest_number(n,list_start,&start_n, abc);
         
         if (start_number == 0) continue; //если в очереди уже есть искомый элемент последовательности
 
@@ -267,6 +267,7 @@ int main(void)
             if (current_elements_number >= ELEMENTS_IN_MEMORY)
             {
                 list_start = delete_element(list_start);
+                current_elements_number--;
                 insert(list_start,next_number,start_n,abc,&current_elements_number);
             }
             else
