@@ -121,6 +121,8 @@ unsigned long long search_nearest_number(int n, struct queue* node, int* start_n
     return nearest_number;
 }
 
+
+//ОСВОБОЖДЕНИЕ ПАМЯТИ
 //удаляем первый элемент в линейном списке
 struct queue* delete_element(struct queue* start)
 {
@@ -164,42 +166,38 @@ unsigned long long calculate_next_number(unsigned long long start_number, int* s
 
     int fl=1;
 
-    while (fl)
+    for (int i=0;i<=100;i++)
     {
-        for (int i=0;i<=abc_sum;i++)
+        threes = pow_ull(FIRST,i);
+        if (threes == 0) break;
+        for (int j=0;j<=100;j++)
         {
-            threes = pow_ull(FIRST,i);
-            if (threes == 0) break;
-            for (int j=0;j<=abc_sum-i;j++)
+            fives = pow_ull(SECOND,j);
+            if (fives == 0) break;
+            for (int k=0;k<=100;k++)
             {
-                fives = pow_ull(SECOND,j);
-                if (fives == 0) break;
-                for (int k=0;k<=abc_sum-j-i;k++)
+                sevens = pow_ull(THIRD,k);
+                if (sevens == 0) break;
+
+                if (i+j+k == 0 || (i<start_abc[0] && j<start_abc[1] && k<start_abc[2])) continue;
+
+                candidate = threes*fives*sevens;
+
+                if ((ULLONG_MAX/threes)/fives < sevens) continue; //skip overflow
+
+                if (candidate < next_number && candidate > start_number) 
                 {
-                    sevens = pow_ull(THIRD,k);
-                    if (sevens == 0) break;
-
-                    if (i+j+k == 0 || (i<start_abc[0] && j<start_abc[1] && k<start_abc[2])) continue;
-
-                    candidate = threes*fives*sevens;
-
-                    if ((ULLONG_MAX/threes)/fives < sevens) continue;
-
-                    if (candidate < next_number && candidate > start_number) 
-                    {
-                        next_number = candidate;
-                        abc[0] = i;
-                        abc[1] = j;
-                        abc[2] = k;
-                    }
-
-                    if (next_number != ULLONG_MAX && i>start_abc[0] && j> start_abc[1] && k > start_abc[2]) fl = 0;
-
-                    printf("%d %d %d %llu\n", i,j,k, start_number);
+                    next_number = candidate;
+                    abc[0] = i;
+                    abc[1] = j;
+                    abc[2] = k;
                 }
+
+                if (next_number != ULLONG_MAX && i>start_abc[0] && j> start_abc[1] && k > start_abc[2]) break;
+
+                //printf("%d %d %d %llu\n", i,j,k, start_number);
             }
         }
-        abc_sum++;
     }
 
     (*start_n)++;
@@ -247,7 +245,7 @@ int main(void)
 
         if (n == 1) 
         {
-            printf("%llu\n", 3);
+            printf("%llu\n", (unsigned long long)3);
             continue;
         }
 
