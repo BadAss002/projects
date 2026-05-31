@@ -47,10 +47,34 @@ void candidates_insert(struct candidates_queue* node, unsigned long long number_
     node->next = NULL;
 }
 
+
+//Deletes every ULLONG_MAX node
 struct candidates_queue* candidates_delete(struct candidates_queue* start)
 {
-    struct candidates_queue* new_start = start->next;
-    free(start);
+    struct candidates_queue* node = start;
+    struct candidates_queue* new_start;
+    struct candidates_queue* prev;
+    struct candidates_queue* current;
+
+    while (node->next != NULL)
+    {
+        if ((node == start || node == new_start) && node->number == ULLONG_MAX)
+        {
+            new_start = node->next;
+            free(node);
+            node = new_start;
+            continue;
+        }
+        else if (node->next->number == ULLONG_MAX)
+        {
+            prev = node;
+            current = node->next;
+            prev->next = current->next;
+            free(current);   
+        }
+        node = node->next;
+    }
+
 
     return new_start;
 }
@@ -253,21 +277,30 @@ int main(void)
                 substitute_selected_candidate(min, candidates_start);
 
                 calculate_candidates(sequence_node,candidates_node);
-                //print_lists(sequence_start,candidates_start);
+                // print_lists(sequence_start,candidates_start);
+                // return 0;
+
+                //DELETION
+                sequence_start = sequence_delete(sequence_start);
+                candidates_start = candidates_delete(candidates_start);
+                print_lists(sequence_start,candidates_start);
+
 
                 if (n == sequence_node->n)
                 {
                     printf("%llu\n", sequence_node->number);
                     break;
                 }
-
-
             }   
         }
         else if (state == 2)
         {
 
         }
+
+        // print_lists(sequence_start,candidates_start);
+        // return 0;
+
 
 
         if (overflow == 1)
