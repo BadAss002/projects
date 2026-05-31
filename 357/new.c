@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <string.h>
 
 struct sequence_queue
 {
@@ -62,9 +64,15 @@ void calculate_candidates(struct sequence_queue* sequence_node, struct candidate
     while (sequence_node->next != NULL) sequence_node = sequence_node->next;
 
     candidate = sequence_node->number;
-    candidates_insert(candidates_node,candidate*3); //be aware of candidates_node if not working
-    candidates_insert(candidates_node,candidate*5);
-    candidates_insert(candidates_node,candidate*7);
+
+    if (ULLONG_MAX/3 < candidate) candidates_insert(candidates_node,ULLONG_MAX);
+    else candidates_insert(candidates_node,candidate*3);
+
+    if (ULLONG_MAX/5 < candidate) candidates_insert(candidates_node,ULLONG_MAX);
+    else candidates_insert(candidates_node,candidate*5);
+    
+    if (ULLONG_MAX/7 < candidate) candidates_insert(candidates_node,ULLONG_MAX);
+    else candidates_insert(candidates_node,candidate*7);
 }   
 
 
@@ -98,6 +106,75 @@ void queue_initial_build(struct sequence_queue* sequence_node, struct candidates
     calculate_candidates(sequence_node,candidates_node);
 }
 
+
+unsigned long long find_min_in_candidates(struct candidates_queue* node)
+{
+    unsigned long long min = ULLONG_MAX;
+    while (node != NULL)
+    {
+        if (node->number < min)
+        {
+            min = node->number;
+        }
+        node = node->next;
+    }
+
+    return min;
+}
+
+void substitute_selected_candidate(unsigned long long number_to_substitute, struct candidates_queue* candidates_start)
+{
+    while (candidates_start != NULL)
+    {
+        if (candidates_start->number == number_to_substitute)
+        {
+            candidates_start->number = ULLONG_MAX;
+        }
+        candidates_start = candidates_start->next;
+    }
+}
+
+
+void get_input(int* n_ptr)
+{
+    char numbers[] = "0123456789";
+    char ch;
+    char string[100];
+    int i=0;
+
+    while ((ch = getc(stdin)) != '\n')
+    {
+        string[i++] = ch;
+        if (ch == EOF)
+        {
+            *n_ptr = -1;
+            return;
+        }
+    }
+    string[i] = '\0';
+
+    *n_ptr = strtol(string,NULL,10);
+
+    for (int i=0;string[i] != '\0';i++)
+    {
+        if (strchr(numbers,string[i]) == NULL) *n_ptr = 0;
+    }
+}
+
+void print_lists(struct sequence_queue* sequence_start, struct candidates_queue* candidates_start)
+{
+    while (sequence_start != NULL)
+    {
+        printf("number: %llu n: %d\n", sequence_start->number, sequence_start->n);
+        sequence_start = sequence_start->next;
+    }
+    while (candidates_start != NULL)
+    {
+        printf("number: %llu\n", candidates_start->number);
+        candidates_start = candidates_start->next;
+    }
+}
+
 int main(void)
 {
     //initialize sequence_queue
@@ -108,18 +185,102 @@ int main(void)
 
     queue_initial_build(sequence_start, candidates_start);
 
+    int n;
+    char state;
+    char overflow = 0;
+    unsigned long long min;
     struct sequence_queue* sequence_node = sequence_start;
     struct candidates_queue* candidates_node = candidates_start;
-    while (sequence_node != NULL)
+    
+    while (1)
     {
-        printf("number: %llu n: %d\n", sequence_node->number, sequence_node->n);
-        sequence_node = sequence_node->next;
+        get_input(&n);
+        if (n==-1) 
+        {
+            return 0;
+        }
+        else if (n == 0 || n<= 0) 
+        {
+            printf("error\n");
+            continue;
+        }
+
+        //checking where is n regarding sequence_queue
+        //state = 0 (in queue), state = 1 (more than last element of queue), state = 2 (less than first element in queue)
+        sequence_node = sequence_start;
+        while (sequence_node != NULL)
+        {
+            if (n == sequence_node->n)
+            {
+                printf("%llu\n", sequence_node->number);
+                state = 0;
+                sequence_node = sequence_start; //remember this just in case
+                break;
+            }
+            else if (n > sequence_node->n && sequence_node->next == NULL)
+            {
+                state = 1;
+                break;
+            }
+            else if (n < sequence_node->n && sequence_node == sequence_start)
+            {
+                state = 2;
+                break;
+            }
+            sequence_node = sequence_node->next;
+        }
+
+
+        if (state == 0)
+        {
+            continue;
+        }
+        else if (state == 1)
+        {
+            while (1)
+            {
+                min = find_min_in_candidates(candidates_start);
+
+                if (min == ULLONG_MAX)
+                {
+                    overflow = 1;
+                    break;
+                }
+
+                sequence_insert(sequence_start,min,sequence_node->n+1);                
+                sequence_node = sequence_node->next;
+
+                substitute_selected_candidate(min, candidates_start);
+
+                calculate_candidates(sequence_node,candidates_node);
+                //print_lists(sequence_start,candidates_start);
+
+                if (n == sequence_node->n)
+                {
+                    printf("%llu\n", sequence_node->number);
+                    break;
+                }
+
+
+            }   
+        }
+        else if (state == 2)
+        {
+
+        }
+
+
+        if (overflow == 1)
+        {
+            printf("overflow\n");
+            overflow = 0;
+            continue;
+        }
+
     }
-    while (candidates_node != NULL)
-    {
-        printf("number: %llu\n", candidates_node->number);
-        candidates_node = candidates_node->next;
-    }
+
+
+    
 
     return 0;
 }
