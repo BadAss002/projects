@@ -184,6 +184,8 @@ void get_input(int* n_ptr)
     {
         if (strchr(numbers,string[i]) == NULL) *n_ptr = 0;
     }
+
+    if (strlen(string) == 0) *n_ptr = -2;
 }
 
 void print_lists(struct sequence_queue* sequence_start, struct candidates_queue* candidates_start)
@@ -211,7 +213,7 @@ int main(void)
     queue_initial_build(sequence_start, candidates_start);
 
     int n;
-    char state;
+    char state = 0;
     char overflow = 0;
     unsigned long long min;
     struct sequence_queue* sequence_node = sequence_start;
@@ -220,6 +222,7 @@ int main(void)
     while (1)
     {
         if (state != 2) get_input(&n);
+        if (n==-2) continue;
         if (n==-1) 
         {
             return 0;
