@@ -52,7 +52,7 @@ void candidates_insert(struct candidates_queue* node, unsigned long long number_
 struct candidates_queue* candidates_delete(struct candidates_queue* start)
 {
     struct candidates_queue* node = start;
-    struct candidates_queue* new_start;
+    struct candidates_queue* new_start = start;
     struct candidates_queue* prev;
     struct candidates_queue* current;
 
@@ -70,7 +70,8 @@ struct candidates_queue* candidates_delete(struct candidates_queue* start)
             prev = node;
             current = node->next;
             prev->next = current->next;
-            free(current);   
+            free(current);
+            continue;   
         }
         node = node->next;
     }
@@ -218,7 +219,7 @@ int main(void)
     
     while (1)
     {
-        get_input(&n);
+        if (state != 2) get_input(&n);
         if (n==-1) 
         {
             return 0;
@@ -261,43 +262,66 @@ int main(void)
         }
         else if (state == 1)
         {
-            while (1)
-            {
-                min = find_min_in_candidates(candidates_start);
-
-                if (min == ULLONG_MAX)
-                {
-                    overflow = 1;
-                    break;
-                }
-
-                sequence_insert(sequence_start,min,sequence_node->n+1);                
-                sequence_node = sequence_node->next;
-
-                substitute_selected_candidate(min, candidates_start);
-
-                calculate_candidates(sequence_node,candidates_node);
-                // print_lists(sequence_start,candidates_start);
-                // return 0;
-
-                //DELETION
-                sequence_start = sequence_delete(sequence_start);
-                candidates_start = candidates_delete(candidates_start);
-                print_lists(sequence_start,candidates_start);
-
-
-                if (n == sequence_node->n)
-                {
-                    printf("%llu\n", sequence_node->number);
-                    break;
-                }
-            }   
+            //do nothing   
         }
         else if (state == 2)
         {
+            sequence_node = sequence_start->next;
+            candidates_node = candidates_start->next;
+            struct sequence_queue* node_to_delete_seq;
+            struct candidates_queue* node_to_delete_cand;
+            while (sequence_node != NULL)
+            {
+                node_to_delete_seq = sequence_node;
+                sequence_node=sequence_node->next;
+                free(node_to_delete_seq);
+            }
+            while (candidates_node != NULL)
+            {
+                node_to_delete_cand = candidates_node;
+                candidates_node=candidates_node->next;
+                free(node_to_delete_cand);
+            }
 
+            queue_initial_build(sequence_start, candidates_start);
+            sequence_node = sequence_start;
+            while (sequence_node->next != NULL) sequence_node = sequence_node->next;
+            candidates_node = candidates_start;
+            continue;
         }
 
+        //search of next element while n != sequence->n
+        while (1)
+        {
+
+            min = find_min_in_candidates(candidates_start);
+
+            if (min == ULLONG_MAX)
+            {
+                overflow = 1;
+                break;
+            }
+
+            sequence_insert(sequence_start,min,sequence_node->n+1);                
+            sequence_node = sequence_node->next;
+
+            substitute_selected_candidate(min, candidates_start);
+
+            calculate_candidates(sequence_node,candidates_start);
+            //print_lists(sequence_start,candidates_start);
+
+            //DELETION
+            sequence_start = sequence_delete(sequence_start);
+            candidates_start = candidates_delete(candidates_start);
+            //print_lists(sequence_start,candidates_start);
+
+
+            if (n == sequence_node->n)
+            {
+                printf("%llu\n", sequence_node->number);
+                break;
+            }
+        }
         // print_lists(sequence_start,candidates_start);
         // return 0;
 
