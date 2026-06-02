@@ -125,8 +125,6 @@ void get_input(int* n_ptr, char* input_ptr)
     }
 
     if (strlen(string) == 0) *input_ptr = -2; //empty line
-
-    if (*n_ptr <= 0) *input_ptr = -1;
 }
 
 void print_list(struct candidates_queue* candidates_start)
@@ -140,6 +138,9 @@ void print_list(struct candidates_queue* candidates_start)
 
 int main(void)
 {
+    FILE* output;
+    output = fopen("new.txt", "w");
+
 
     //initialize candidates_queue
     struct candidates_queue* candidates_start = (struct candidates_queue*)calloc(1,sizeof(struct candidates_queue));
@@ -166,7 +167,7 @@ int main(void)
 
         if (input == -1)
         {
-            printf("error\n");
+            fprintf(output,"error\n");
             continue;
         }
         else if (input == -2) //empty line
@@ -207,12 +208,12 @@ int main(void)
         {
             if (sequence_number == ULLONG_MAX)
             {
-                printf("overflow\n");
+                fprintf(output,"overflow\n");
                 break;
             }
             else if (n == current_n)
             {
-                printf("%llu\n", sequence_number);
+                fprintf(output,"%llu\n", sequence_number);
                 break;
             }
             else
