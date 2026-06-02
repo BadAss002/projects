@@ -3,13 +3,6 @@
 #include <limits.h>
 #include <string.h>
 
-struct sequence_queue
-{
-    unsigned long long number;
-    int n;
-    struct sequence_queue* next;
-};
-
 struct candidates_queue
 {
     unsigned long long number;
@@ -17,131 +10,75 @@ struct candidates_queue
 };
 
 
-//funcs for queues
-void sequence_insert(struct sequence_queue* node, unsigned long long number_to_insert, int n_to_insert)
+void candidates_insert(struct candidates_queue* start_node, unsigned long long number_to_insert)
 {
-    while(node->next != NULL) node=node->next; //move to end of the queue
+    if (start_node->number == 0) //at start of program insert in start_node
+    {
+        start_node->number = number_to_insert;
+        start_node->next = NULL;
+        return;
+    }
 
-    node->next = (struct sequence_queue*)malloc(sizeof(struct sequence_queue));
-    node = node->next;
-    node->number = number_to_insert;
-    node->n = n_to_insert;
-    node->next = NULL;
-}
+    while(start_node->next != NULL) start_node=start_node->next; //move to end of the queue
 
-struct sequence_queue* sequence_delete(struct sequence_queue* start)
-{
-    struct sequence_queue* new_start = start->next;
-    free(start);
-
-    return new_start;
-}
-
-void candidates_insert(struct candidates_queue* node, unsigned long long number_to_insert)
-{
-    while(node->next != NULL) node=node->next; //move to end of the queue
-
-    node->next = (struct candidates_queue*)malloc(sizeof(struct candidates_queue));
-    node = node->next;
-    node->number = number_to_insert;
-    node->next = NULL;
+    start_node->next = (struct candidates_queue*)malloc(sizeof(struct candidates_queue));
+    start_node = start_node->next;
+    start_node->number = number_to_insert;
+    start_node->next = NULL;
 }
 
 
 //Deletes every ULLONG_MAX node
-struct candidates_queue* candidates_delete(struct candidates_queue* start)
+void candidates_delete(struct candidates_queue** start_ptr)
 {
-    struct candidates_queue* node = start;
-    struct candidates_queue* new_start = start;
-    struct candidates_queue* prev;
-    struct candidates_queue* current;
+    struct candidates_queue* node = *start_ptr;
+    struct candidates_queue* node_to_delete;
 
     while (node->next != NULL)
     {
-        if ((node == start || node == new_start) && node->number == ULLONG_MAX)
+        if (node == *start_ptr && node->number == ULLONG_MAX)
         {
-            new_start = node->next;
+            *start_ptr = node->next;
             free(node);
-            node = new_start;
+            node = *start_ptr;
             continue;
         }
         else if (node->next->number == ULLONG_MAX)
         {
-            prev = node;
-            current = node->next;
-            prev->next = current->next;
-            free(current);
+            node_to_delete = node->next;
+            node->next = node->next->next;
+            free(node_to_delete);
             continue;   
         }
         node = node->next;
     }
-
-
-    return new_start;
 }
 
 
-//add candidates to queue based only on last sequence_node
-void calculate_candidates(struct sequence_queue* sequence_node, struct candidates_queue* candidates_node)
+//add candidates to queue based only on last number in sequence
+void calculate_candidates(unsigned long long sequence_number, struct candidates_queue* candidates_start)
 {
-    unsigned long long candidate;
+    if (ULLONG_MAX/3 < sequence_number) candidates_insert(candidates_start,ULLONG_MAX);
+    else candidates_insert(candidates_start,sequence_number*3);
 
-    while (sequence_node->next != NULL) sequence_node = sequence_node->next;
-
-    candidate = sequence_node->number;
-
-    if (ULLONG_MAX/3 < candidate) candidates_insert(candidates_node,ULLONG_MAX);
-    else candidates_insert(candidates_node,candidate*3);
-
-    if (ULLONG_MAX/5 < candidate) candidates_insert(candidates_node,ULLONG_MAX);
-    else candidates_insert(candidates_node,candidate*5);
+    if (ULLONG_MAX/5 < sequence_number) candidates_insert(candidates_start,ULLONG_MAX);
+    else candidates_insert(candidates_start,sequence_number*5);
     
-    if (ULLONG_MAX/7 < candidate) candidates_insert(candidates_node,ULLONG_MAX);
-    else candidates_insert(candidates_node,candidate*7);
+    if (ULLONG_MAX/7 < sequence_number) candidates_insert(candidates_start,ULLONG_MAX);
+    else candidates_insert(candidates_start,sequence_number*7);
 }   
 
 
-//3 5 7
-//9 15 21 15 25 35 21 35 49
-void queue_initial_build(struct sequence_queue* sequence_node, struct candidates_queue* candidates_node)
-{
-    //first_sequence_node
-    sequence_node->number = (unsigned long long)3;
-    sequence_node->n = (int)1;
-    sequence_node->next = NULL;
-
-    //1-3 candidate_nodes
-    candidates_node->number = (unsigned long long)9;
-    candidates_node->next = (struct candidates_queue*)malloc(sizeof(struct candidates_queue));
-    candidates_node = candidates_node->next;
-    candidates_node->number = (unsigned long long)15;
-    candidates_node->next = (struct candidates_queue*)malloc(sizeof(struct candidates_queue));
-    candidates_node = candidates_node->next;
-    candidates_node->number = (unsigned long long)21;
-    candidates_node->next = NULL;
-
-    //5
-    //15 25 35
-    sequence_insert(sequence_node,(unsigned long long)5,(int)2);
-    calculate_candidates(sequence_node,candidates_node);
-
-    //7
-    //21 35 49
-    sequence_insert(sequence_node,(unsigned long long)7,(int)3);
-    calculate_candidates(sequence_node,candidates_node);
-}
-
-
-unsigned long long find_min_in_candidates(struct candidates_queue* node)
+unsigned long long find_min_in_candidates(struct candidates_queue* start_node)
 {
     unsigned long long min = ULLONG_MAX;
-    while (node != NULL)
+    while (start_node != NULL)
     {
-        if (node->number < min)
+        if (start_node->number < min)
         {
-            min = node->number;
+            min = start_node->number;
         }
-        node = node->next;
+        start_node = start_node->next;
     }
 
     return min;
@@ -160,19 +97,21 @@ void substitute_selected_candidate(unsigned long long number_to_substitute, stru
 }
 
 
-void get_input(int* n_ptr)
+void get_input(int* n_ptr, char* input_ptr)
 {
     char numbers[] = "0123456789";
     char ch;
-    char string[100];
+    char *string = (char*)malloc(sizeof(char)*1000);
     int i=0;
+    int count = 2;
 
     while ((ch = getc(stdin)) != '\n')
     {
+        if (i%1000 == 999) string = (char*)realloc(string, 1000*count++);
         string[i++] = ch;
         if (ch == EOF)
         {
-            *n_ptr = -1;
+            *input_ptr = 0;
             return;
         }
     }
@@ -180,21 +119,16 @@ void get_input(int* n_ptr)
 
     *n_ptr = strtol(string,NULL,10);
 
-    for (int i=0;string[i] != '\0';i++)
+    for (int i=0;string[i] != '\0' && string[i] != '\n';i++)
     {
-        if (strchr(numbers,string[i]) == NULL) *n_ptr = 0;
+        if (strchr(numbers,string[i]) == NULL) *input_ptr = -1; //incorrect line
     }
 
-    if (strlen(string) == 0) *n_ptr = -2;
+    if (strlen(string) == 0) *input_ptr = -2; //empty line
 }
 
-void print_lists(struct sequence_queue* sequence_start, struct candidates_queue* candidates_start)
+void print_list(struct candidates_queue* candidates_start)
 {
-    while (sequence_start != NULL)
-    {
-        printf("number: %llu n: %d\n", sequence_start->number, sequence_start->n);
-        sequence_start = sequence_start->next;
-    }
     while (candidates_start != NULL)
     {
         printf("number: %llu\n", candidates_start->number);
@@ -204,140 +138,95 @@ void print_lists(struct sequence_queue* sequence_start, struct candidates_queue*
 
 int main(void)
 {
-    //initialize sequence_queue
-    struct sequence_queue* sequence_start = (struct sequence_queue*)malloc(sizeof(struct sequence_queue));
 
     //initialize candidates_queue
-    struct candidates_queue* candidates_start = (struct candidates_queue*)malloc(sizeof(struct candidates_queue));
+    struct candidates_queue* candidates_start = (struct candidates_queue*)calloc(1,sizeof(struct candidates_queue));
+    struct candidates_queue* node_to_delete;
 
-    queue_initial_build(sequence_start, candidates_start);
-
+    unsigned long long sequence_number = 1;
+    int current_n = 1;
+    char input;
     int n;
-    char state = 0;
-    char overflow = 0;
-    unsigned long long min;
-    struct sequence_queue* sequence_node = sequence_start;
-    struct candidates_queue* candidates_node = candidates_start;
-    
+
+    calculate_candidates(sequence_number,candidates_start);
+
+    sequence_number = find_min_in_candidates(candidates_start);
+
+    substitute_selected_candidate(sequence_number,candidates_start);
+
+    candidates_delete(&candidates_start);
+
+
     while (1)
     {
-        if (state != 2) get_input(&n);
-        if (n==-2) continue;
-        if (n==-1) 
-        {
-            return 0;
-        }
-        else if (n == 0 || n<= 0) 
+        input = 1;
+        get_input(&n,&input);
+
+        if (input == -1)
         {
             printf("error\n");
             continue;
         }
-
-        //checking where is n regarding sequence_queue
-        //state = 0 (in queue), state = 1 (more than last element of queue), state = 2 (less than first element in queue)
-        sequence_node = sequence_start;
-        while (sequence_node != NULL)
-        {
-            if (n == sequence_node->n)
-            {
-                printf("%llu\n", sequence_node->number);
-                state = 0;
-                sequence_node = sequence_start; //remember this just in case
-                break;
-            }
-            else if (n > sequence_node->n && sequence_node->next == NULL)
-            {
-                state = 1;
-                break;
-            }
-            else if (n < sequence_node->n && sequence_node == sequence_start)
-            {
-                state = 2;
-                break;
-            }
-            sequence_node = sequence_node->next;
-        }
-
-
-        if (state == 0)
+        else if (input == -2) //empty line
         {
             continue;
         }
-        else if (state == 1)
+        else if (input == 0)
         {
-            //do nothing   
-        }
-        else if (state == 2)
-        {
-            sequence_node = sequence_start->next;
-            candidates_node = candidates_start->next;
-            struct sequence_queue* node_to_delete_seq;
-            struct candidates_queue* node_to_delete_cand;
-            while (sequence_node != NULL)
-            {
-                node_to_delete_seq = sequence_node;
-                sequence_node=sequence_node->next;
-                free(node_to_delete_seq);
-            }
-            while (candidates_node != NULL)
-            {
-                node_to_delete_cand = candidates_node;
-                candidates_node=candidates_node->next;
-                free(node_to_delete_cand);
-            }
-
-            queue_initial_build(sequence_start, candidates_start);
-            sequence_node = sequence_start;
-            while (sequence_node->next != NULL) sequence_node = sequence_node->next;
-            candidates_node = candidates_start;
-            continue;
+            return 0;
         }
 
-        //search of next element while n != sequence->n
+        if (n < current_n) //reinitialize queue
+        {
+            current_n = 1;
+            while (candidates_start != NULL)
+            {
+                node_to_delete = candidates_start;
+                candidates_start = candidates_start->next;
+                free(node_to_delete);
+            }
+            
+            candidates_start = (struct candidates_queue*)calloc(1,sizeof(struct candidates_queue));
+
+            sequence_number = 1;
+            current_n = 1;
+
+            calculate_candidates(sequence_number,candidates_start);
+
+            sequence_number = find_min_in_candidates(candidates_start);
+
+            substitute_selected_candidate(sequence_number,candidates_start);
+
+            candidates_delete(&candidates_start);
+        }
+
+
         while (1)
         {
-
-            min = find_min_in_candidates(candidates_start);
-
-            if (min == ULLONG_MAX)
+            if (sequence_number == ULLONG_MAX)
             {
-                overflow = 1;
+                printf("overflow\n");
                 break;
             }
-
-            sequence_insert(sequence_start,min,sequence_node->n+1);                
-            sequence_node = sequence_node->next;
-
-            substitute_selected_candidate(min, candidates_start);
-
-            calculate_candidates(sequence_node,candidates_start);
-            //print_lists(sequence_start,candidates_start);
-
-            //DELETION
-            sequence_start = sequence_delete(sequence_start);
-            candidates_start = candidates_delete(candidates_start);
-            //print_lists(sequence_start,candidates_start);
-
-
-            if (n == sequence_node->n)
+            else if (n == current_n)
             {
-                printf("%llu\n", sequence_node->number);
+                printf("%llu\n", sequence_number);
                 break;
             }
+            else
+            {
+                calculate_candidates(sequence_number,candidates_start);
+                sequence_number = find_min_in_candidates(candidates_start);
+                substitute_selected_candidate(sequence_number,candidates_start);
+                candidates_delete(&candidates_start);
+                current_n++;
+            }
+
         }
-        // print_lists(sequence_start,candidates_start);
-        // return 0;
-
-
-
-        if (overflow == 1)
-        {
-            printf("overflow\n");
-            overflow = 0;
-            continue;
-        }
-
     }
+
+
+    
 
 
     

@@ -235,7 +235,7 @@ int main(void)
         if (n == -1) return 0;
         if (n == 0 || n<= 0) 
         {
-            printf("error\n");
+            printf("error: %d\n",n);
             continue;
         }
 
