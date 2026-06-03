@@ -116,28 +116,26 @@ long long parse_ll(const char* s) {
 }
 
 int main() {
-    FILE* output;
-    output = fopen("compare.txt", "w");
     char line[256];
     while (fgets(line, sizeof(line), stdin)) {
         line[strcspn(line, "\n")] = '\0';
         if (strlen(line) == 0) continue;
         if (!is_number_ok(line)) {
-            fprintf(output,"error\n");
+            printf("error\n");
             continue;
         }
         long long n = parse_ll(line);
         if (n <= 0) {
-            fprintf(output,"error\n");
+            printf("error\n");
             continue;
         }
         int overflow = 0;
         unsigned long long res = get_nth((int)n, &overflow);
         if (overflow || res == 0) {
-            fprintf(output,"overflow\n");
+            printf("overflow\n");
         }
         else {
-            fprintf(output, "%llu\n", res);
+            printf("%llu\n", res);
         }
     }
     return 0;

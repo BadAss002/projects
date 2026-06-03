@@ -97,34 +97,37 @@ void substitute_selected_candidate(unsigned long long number_to_substitute, stru
 }
 
 
-void get_input(int* n_ptr, char* input_ptr)
+void get_input(unsigned long long* n_ptr, char* input_ptr)
 {
-    char numbers[] = "0123456789";
-    char ch;
-    char *string = (char*)malloc(sizeof(char)*1000);
-    int i=0;
-    int count = 2;
-
-    while ((ch = getc(stdin)) != '\n')
+    //line create
+    char line[512];
+    char digits[] = "0123456789";
+    if (fgets(line,sizeof(line),stdin) == NULL)
     {
-        if (i%1000 == 999) string = (char*)realloc(string, 1000*count++);
-        string[i++] = ch;
-        if (ch == EOF)
-        {
-            *input_ptr = 0;
-            return;
-        }
+        *input_ptr = 0;
     }
-    string[i] = '\0';
-
-    *n_ptr = strtol(string,NULL,10);
-
-    for (int i=0;string[i] != '\0' && string[i] != '\n';i++)
+    else 
     {
-        if (strchr(numbers,string[i]) == NULL) *input_ptr = -1; //incorrect line
+        *input_ptr = 1;
+        line[strcspn(line, "\n")] = '\0';
     }
 
-    if (strlen(string) == 0) *input_ptr = -2; //empty line
+    //line check
+    for (int i=0;line[i];i++)
+    {
+        if (line[i] == '\0') *input_ptr = -1;
+        if (line[i] == '-') *input_ptr = -1; 
+        if (strchr(digits,line[i]) == NULL) *input_ptr = -1;
+    }
+
+    if (strlen(line) == 0)
+    {
+        *input_ptr = -2;
+        return;
+    }
+
+    //line to ull
+    *n_ptr = (unsigned long long)strtoul(line, NULL,10);
 
     if (*n_ptr <= 0) *input_ptr = -1;
 }
@@ -148,7 +151,7 @@ int main(void)
     unsigned long long sequence_number = 1;
     int current_n = 1;
     char input;
-    int n;
+    unsigned long long n;
 
     calculate_candidates(sequence_number,candidates_start);
 
@@ -177,6 +180,7 @@ int main(void)
         {
             return 0;
         }
+
 
         if (n < current_n) //reinitialize queue
         {

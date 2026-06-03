@@ -160,10 +160,11 @@ int main(void)
     candidates_delete(&candidates_start);
 
 
-    while (1)
+    for (int i=5000;i>=1;i--)
     {
         input = 1;
-        get_input(&n,&input);
+        //get_input(&n,&input);
+        n = i;
 
         if (input == -1)
         {
