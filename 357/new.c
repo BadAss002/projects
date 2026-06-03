@@ -97,7 +97,7 @@ void substitute_selected_candidate(unsigned long long number_to_substitute, stru
 }
 
 
-void get_input(unsigned long long* n_ptr, char* input_ptr)
+void get_input(unsigned long long* n_ptr, int* input_ptr)
 {
     //line create
     char line[512];
@@ -105,6 +105,7 @@ void get_input(unsigned long long* n_ptr, char* input_ptr)
     if (fgets(line,sizeof(line),stdin) == NULL)
     {
         *input_ptr = 0;
+        return;
     }
     else 
     {
@@ -118,6 +119,7 @@ void get_input(unsigned long long* n_ptr, char* input_ptr)
         if (line[i] == '\0') *input_ptr = -1;
         if (line[i] == '-') *input_ptr = -1; 
         if (strchr(digits,line[i]) == NULL) *input_ptr = -1;
+        if (*input_ptr == -1) return;
     }
 
     if (strlen(line) == 0)
@@ -130,6 +132,7 @@ void get_input(unsigned long long* n_ptr, char* input_ptr)
     *n_ptr = (unsigned long long)strtoul(line, NULL,10);
 
     if (*n_ptr <= 0) *input_ptr = -1;
+
 }
 
 void print_list(struct candidates_queue* candidates_start)
@@ -150,7 +153,7 @@ int main(void)
 
     unsigned long long sequence_number = 1;
     int current_n = 1;
-    char input;
+    int input;
     unsigned long long n;
 
     calculate_candidates(sequence_number,candidates_start);
