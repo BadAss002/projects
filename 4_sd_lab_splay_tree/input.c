@@ -24,6 +24,7 @@ int main(void)
         'l' '\n'
         'dsfdsffsd'
     */
+    unsigned value = '𰀐';
 
 
     return 0;

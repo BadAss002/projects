@@ -121,8 +121,8 @@ int comment_deletion(FILE* f1) {
 
 //узел
 struct node {
-    unsigned char mbs[5]; //char mbs[] = {0xF0, 0xB0, 0x80, 0x90};
-    char32_t unicode_codepoint; //U+xxxx
+    unsigned char mbc[5]; //char mbs[] = {0xF0, 0xB0, 0x80, 0x90};
+    //char32_t unicode_codepoint; //U+xxxx
     int count;
     struct node* parent;
     struct node* left;
@@ -142,29 +142,74 @@ void search()
 }
 
 //вставка
-void insert(unsigned char* mbs, char32_t unicode_codepoint)
+void insert(unsigned char* mbc)
 {
-    for (int i=0;i<4;i++)
-        printf("%x\n", mbs[i]);
-    printf("U+%04X\n", unicode_codepoint);    
-}
+    for (int i=0;mbc[i];i++)   
+        printf("0x%X\n", mbc[i]);
+    printf("\n");
+}   
 
+
+// char32_t mbctocodepoint(unsigned char* mbc, char32_t* ch_ptr)
+// {
+//     size_t result = 1;
+//     mbstate_t state = {0};
+//     //printf("%d\n", *s);
+
+//     for (int i=0;i<4;i++)
+//     {
+//         result = mbrtoc32(ch_ptr,mbc[i],1,&state);
+//         if (result == (size_t)-1)
+//         {
+//             printf("mbrtoc32 error\n");
+//             break;
+//         }
+//         else if (result == (size_t)-2)
+//         {
+//             continue;
+//         }
+//         else if (result == (size_t)-3)
+//         {
+//             printf("surrogate pair?");
+//             break;
+//         }
+//         else if (result > 0)
+//         {
+            
+//         }
+//     }
+// }
+
+//convert letter after \ to ASCII number
+void escape_sequences(int* ch)
+{
+    if (*ch == '\'') *ch = 0x27;
+    else if (*ch == '\"') *ch = 0x22;
+    else if (*ch == '\?') *ch = 0x3f;
+    else if (*ch == '\\') *ch = 0x5c;
+    else if (*ch == 'a') *ch = 0x07;
+    else if (*ch == 'b') *ch = 0x08;
+    else if (*ch == 'f') *ch = 0x0c;
+    else if (*ch == 'n') *ch = 0x0a;
+    else if (*ch == 'r') *ch = 0x0d;
+    else if (*ch == 't') *ch = 0x09;
+    else if (*ch == 'v') *ch = 0x0b;
+    else printf("escape sequence error");
+}
 
 void file_handler(char* filename)
 {
     FILE* input;
     input = fopen(filename, "r");
+    
     //delete comments
     if (comment_deletion(input) != 0) printf("comment_deletion_error");
+
     //reopen file without comments
     input = fopen("temp.c", "r");
     
     int letter;
-    unsigned char value[5];
-    const char* ptr = (const char*)value;
-    char32_t ch = 0xFFFFFFFF;
-    size_t result = 1;
-    mbstate_t state = {0};
+    unsigned char mbc[5];
 
     while ((letter = fgetc(input)) != EOF)
     {
@@ -180,45 +225,35 @@ void file_handler(char* filename)
                 }
             }
         }
-        //main block
+        //symbol(s) in signle quotes
         else if (letter == '\'')
         {
-            for (int i=0;i<4;i++)
+            for (int i=0;i<5;i++) mbc[i] = 0;
+            for (int i=0;i<5;i++)
             {
                 letter = fgetc(input);
+                if (letter == EOF) break;
                 if (letter == '\\')
                 {
                     letter = fgetc(input);
+                    escape_sequences(&letter);
                 }
-                else if (letter == EOF)
+                else if (letter == '\'')
                 {
+                    mbc[i] = '\0';
                     break;
                 }
 
-                const unsigned char* s = (const unsigned char*)&letter;
-                printf("%d\n", *s);
-                result = mbrtoc32(&ch,s,1,&state);
-
-                if (result == (size_t)-1)
-                {
-                    printf("mbrtoc32 error\n");
-                    break;
-                }
-                else if (result == (size_t)-2)
-                {
-                    value[i] = (unsigned char)letter;
-                }
-                else if (result == (size_t)-3)
-                {
-                    printf("surrogate pair?");
-                    break;
-                }
-                else if (result > 0)
-                {
-                    value[i] = (unsigned char)letter;
-                    value[i+1] = '\0';
-                    insert(value, ch);
-                }
+                mbc[i] = (unsigned char)letter;                
+            }
+            if (letter == '\'')
+            {
+                insert(mbc);
+            }
+            else
+            {
+                printf("Symbol in single quotes more than 4 bytes\n");
+                while ((letter = fgetc(input)) != '\'');
             }
         }
         //printf("%x\n", (unsigned char)letter);
@@ -235,7 +270,7 @@ int main(void)
 {
     setlocale(LC_ALL, ".UTF-8");
 
-    file_handler("test.txt");
+    file_handler("input.c");
 
     
 
