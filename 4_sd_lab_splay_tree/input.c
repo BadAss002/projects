@@ -26,6 +26,14 @@ int main(void)
     */
     unsigned value = '𰀐';
 
+    unsigned value2 = '𰀐𰀐';
+    unsigned value3 = '𰀐𰀐';
+
+    unsigned value4 = 'ab\
+cd';
+
+    unsigned value5 = 'abcd';
+
 
     return 0;
 }
