@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define size 82
+#define size 300
 
 char operands[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 char operators[] = "+-/*";
@@ -49,11 +49,13 @@ int string_check(char * line)
     int lcount = 0;
     int rcount = 0;
     int numb_count = 0;
+    int operator_count = 0;
     for (int i=0;i<strlen(line);i++) // проверка количества открывающих и закрывающих скобок
         {
             if (line[i] == '(') lcount++;
             if (line[i] == ')') rcount++;
-            if (strchr(operands,line[i])) numb_count++; //если нет чисел и букв
+            if (strchr(operands,line[i])) numb_count++; //кол-во букв и цифр
+            if (strchr(operators,line[i])) operator_count++; //кол-во знаков
             //if (strchr(operators,line[i]) && strchr(operators,line[i+1]) && i != strlen(line)-1) return -1; // ++ ** +- -- и тд
             if (strchr(operators,line[i])) // ++ ** +- -- +) *) +___+
             {
@@ -76,19 +78,9 @@ int string_check(char * line)
                     j++;
                 }
             }
-            //if (line[i] == '/' && line[i+1] == '0') return -1; //деление на ноль
-            // if (line[i] == '/') // /0
-            // {
-            //     int j=i+1;
-            //     while (line[j] != '\0')
-            //     {
-            //         if (line[j] == '0') return -1;
-            //         else if (strchr(operands,line[j]) || line[j] == '(') break;
-            //         j++;
-            //     }
-            // }
+            if (strchr(operands,line[i]) == NULL && strchr(operators,line[i]) == NULL && line[i] != '(' && line[i] != ')' && line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != '\r' && line[i] != '\0') return -1;
         }
-    if (lcount != rcount || numb_count == 0)
+    if (lcount != rcount || numb_count == 0 || numb_count != operator_count+1 || strlen(line) > 81) //check if not 14/14
     {
         return -1;
     }
@@ -101,14 +93,20 @@ int main(void)
     char line[size];
     char output_str[size];
     char ch;
+    char line_letter;
+    char letter_count = 0;
     char place = 0;
     int temp = 0;
     stack.top = -1;
     stack.arr[0] = -1;
 
-    while (fgets(line,size,stdin))
-    {
 
+    while (fgets(line,size,stdin) != NULL)
+    {
+        //создаем строку
+        line[strcspn(line,"\n")] = '\0';
+
+        //проверяем строку на вшивость
         if (string_check(line) == -1)
         {
             printf("error\n");
@@ -178,7 +176,7 @@ int main(void)
         {
             for (int i=0;i<=strlen(output_str);i++)
             {
-                big_ch = output_str[i];
+                big_ch = (long long)output_str[i];
                 if (big_ch == '\n' || big_ch == '\0')
                 {
                     break;
@@ -230,6 +228,7 @@ int main(void)
 
         //clear stack
         while (stack.top != -1) pop();
+
     }
 
 

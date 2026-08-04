@@ -32,6 +32,9 @@ int main(void)
     unsigned value4 = 'ab\
 cd';
 
+    unsigned value6 = 'abcd\
+';
+
     unsigned value5 = 'abcd';
 
 

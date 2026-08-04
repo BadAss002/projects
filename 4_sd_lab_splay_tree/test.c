@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 struct test{
-    int number; 
+    int number;
+    char* string; 
 };
 
 void func(struct test* node)
@@ -16,20 +17,26 @@ void func(struct test* node)
 
 
 int main(void) {
-    setlocale(LC_ALL, ".UTF-8");
+    struct test a;
+    struct test b;
+    a.number = 199;
+    a.string = "hello";
+    b = a;
+    printf("%d %s\n", b.number, b.string);
+//     setlocale(LC_ALL, ".UTF-8");
 
-    unsigned value = 'abcd';
-    unsigned value2 = 'ab\
-cd';
+//     unsigned value = 'abcd';
+//     unsigned value2 = 'ab\
+// cd';
 
-    unsigned char* ptr = (unsigned char*)&value;
-    for (int i=0;i<4;i++)
-        printf("%c", ptr[i]);
-    printf("\n");
+//     unsigned char* ptr = (unsigned char*)&value;
+//     for (int i=0;i<4;i++)
+//         printf("%c", ptr[i]);
+//     printf("\n");
 
-    ptr = (unsigned char *)&value2;
-    for (int i=0;i<4;i++)
-        printf("%c", ptr[i]);
+//     ptr = (unsigned char *)&value2;
+//     for (int i=0;i<4;i++)
+//         printf("%c", ptr[i]);
 
 
     // struct test* node = NULL;
