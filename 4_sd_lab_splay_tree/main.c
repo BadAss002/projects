@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_BYTES_IN_MBCC 4
 
 int comment_deletion(FILE* f1) {
 
@@ -268,14 +267,34 @@ struct node* split(struct node** subtrees,struct node* root, uint32_t key)
         root->right = NULL;
         return root;
     }
+    
+    return NULL;
 }
 
 
 //вставка
 struct node* insert(unsigned char* mbc, struct node* root, unsigned mbc_length)
 {
+    // uint32_t key = 0;
+    // memcpy(&key,mbc,mbc_length);
+    // printf("%d\n", mbc_length);
+
+    //reverse little endian to big endian
     uint32_t key = 0;
-    memcpy(&key,mbc,mbc_length);
+    for (int i=0;i<mbc_length;i++)
+    {
+        key = key << 8;
+        key = key | mbc[i];
+    }
+    // for (int i=0;i<32;i++)
+    // {
+    //     if (key & 2147483648)
+    //         printf("1");
+    //     else
+    //         printf("0");
+    //     key = key << 1;
+    // }
+    // printf("\n");
 
     struct node* subtrees[2] = {NULL, NULL};
     root = split(subtrees,root,key);
@@ -306,7 +325,7 @@ struct node* insert(unsigned char* mbc, struct node* root, unsigned mbc_length)
 
 void print_tree(struct node* x, int height)
 {
-    printf("height:%d\tparent:0x%p\tptr:0x%p\tcount:%d\tchar:\'%s\'\tkey=%u\n\t\tleft:0x%p\t\tright:0x%p\n\n", height,x->parent,x, x->count,x->mbc,x->key, x->left, x->right);
+    printf("height:%d\tparent:\'%s\'\tchar:\'%s\'\tkey=%u\tcount:%d\n\t\tleft:\'%s\'\tright:\'%s\'\n\n", height,x->parent->mbc,x->mbc,x->key,x->count, x->left->mbc, x->right->mbc);
     if (x->left != NULL)
         print_tree(x->left, height+1);
     if (x->right != NULL)
@@ -420,7 +439,7 @@ int main(void)
 
     struct node* root = NULL;
 
-    char filename[] = "input.c";
+    char filename[] = "input2.c";
 
     root = file_handler(filename,root);
 
