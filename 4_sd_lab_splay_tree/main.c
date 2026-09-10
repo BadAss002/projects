@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_BYTES_IN_MBCC 4
 
 int comment_deletion(FILE* f1) {
 
@@ -218,6 +219,7 @@ struct node* search(struct node* x, uint32_t key)
     if (x->key == key)
     {
         x->count++;
+        //printf("wallahi = %d %p\n", x->count, x);
         return splay(x);
     }
 
@@ -231,13 +233,13 @@ struct node* search(struct node* x, uint32_t key)
 
 
 //subtrees[] = {left subtree, right subtree}
-void split(struct node** subtrees,struct node* root, uint32_t key)
+struct node* split(struct node** subtrees,struct node* root, uint32_t key)
 {
-    if (root == NULL || root->key == 0)
+    if (root == NULL)
     {
         subtrees[0] = NULL;
         subtrees[1] = NULL;
-        return;
+        return NULL;
     }
 
     root = search(root, key);
@@ -246,7 +248,7 @@ void split(struct node** subtrees,struct node* root, uint32_t key)
     {
         subtrees[0] = root->left;
         subtrees[1] = root->right;
-        return;
+        return root;
     }
     if (key < root->key)
     {
@@ -255,7 +257,7 @@ void split(struct node** subtrees,struct node* root, uint32_t key)
         if (root->left != NULL)
             root->left->parent = NULL;
         root->left = NULL;
-        return;
+        return root;
     }
     if (key > root->key)
     {
@@ -264,27 +266,21 @@ void split(struct node** subtrees,struct node* root, uint32_t key)
         if (root->right != NULL)
             root->right->parent = NULL;
         root->right = NULL;
-        return;
+        return root;
     }
 }
 
 
 //вставка
-struct node* insert(unsigned char* mbc, struct node* root)
+struct node* insert(unsigned char* mbc, struct node* root, unsigned mbc_length)
 {
-    uint32_t key;
-    memcpy(&key,mbc,4);
-    // for (int i=0;i<4;i++)
-    // {
-    //     printf("%x ", mbc[i]);
-    // }
-    // printf("\t");
-    // printf("%lu", key);
-    // printf("\n");
-    struct node* subtrees[2] = {NULL, NULL};
-    split(subtrees,root,key);
+    uint32_t key = 0;
+    memcpy(&key,mbc,mbc_length);
 
-    //if root->key == key
+    struct node* subtrees[2] = {NULL, NULL};
+    root = split(subtrees,root,key);
+
+    //if count++
     if (root != NULL)
         if (root->left == subtrees[0] && root->right == subtrees[1])
             return root;
@@ -292,7 +288,7 @@ struct node* insert(unsigned char* mbc, struct node* root)
     root = (struct node*)calloc(1,sizeof(struct node));
     root->count = 1;
     root->key = key;
-    for (int i=0;mbc[i];i++)
+    for (int i=0;i<mbc_length;i++)
         root->mbc[i] = mbc[i];
 
     root->left = subtrees[0];
@@ -310,7 +306,7 @@ struct node* insert(unsigned char* mbc, struct node* root)
 
 void print_tree(struct node* x, int height)
 {
-    printf("height:%d\tparent:0x%p\tptr:0x%p\tcount:%d\tchar:\'%s\'\tkey=%u\n\t\t\tleft:0x%p\t\tright:0x%p\n\n", height,x->parent,x, x->count,x->mbc,x->key, x->left, x->right);
+    printf("height:%d\tparent:0x%p\tptr:0x%p\tcount:%d\tchar:\'%s\'\tkey=%u\n\t\tleft:0x%p\t\tright:0x%p\n\n", height,x->parent,x, x->count,x->mbc,x->key, x->left, x->right);
     if (x->left != NULL)
         print_tree(x->left, height+1);
     if (x->right != NULL)
@@ -332,6 +328,7 @@ void escape_sequences(int* ch)
     else if (*ch == 'r') *ch = 0x0d;
     else if (*ch == 't') *ch = 0x09;
     else if (*ch == 'v') *ch = 0x0b;
+    else if (*ch == '0') *ch = 0x0;
     else printf("escape sequence error");
 }
 
@@ -348,6 +345,7 @@ struct node* file_handler(char* filename, struct node* root)
     
     int letter;
     unsigned char mbc[5];
+    unsigned mbc_length = 0;
 
     while ((letter = fgetc(input)) != EOF)
     {
@@ -385,36 +383,40 @@ struct node* file_handler(char* filename, struct node* root)
                 else if (letter == '\'')
                 {
                     mbc[i] = '\0';
+                    mbc_length = i;
                     break;
                 }
 
-                mbc[i] = (unsigned char)letter;                
+                mbc[i] = (unsigned char)letter;   
+                mbc_length = i;             
             }
 
             if (letter == '\'')
             {
-                root = insert(mbc, root);
+                if (mbc_length == 0)
+                    printf("Single quotes must contain at least 1 character\n");
+                else
+                {
+                    root = insert(mbc, root, mbc_length);
+                }
             }
             else
             {
                 printf("Symbol in single quotes more than 4 bytes\n");
                 while ((letter = fgetc(input)) != '\'');
             }
-        }
-        //printf("%x\n", (unsigned char)letter);
-    }
-    // value[i] = '\0';
-    // mbstate_t state = {0};
-    // size_t res = mbrtoc32(&ch, ptr, 4, &state);
 
-    //printf("U+%04X", ch);
+            mbc_length = 0;
+        }
+    }
+
     return root;
 }
 
 
 int main(void)
 {
-    setlocale(LC_ALL, ".UTF-8");
+    setlocale(LC_ALL, "");
 
     struct node* root = NULL;
 
@@ -422,25 +424,11 @@ int main(void)
 
     root = file_handler(filename,root);
 
-    print_tree(root,0);
+    if (root == NULL)
+        printf("The tree is empty\n");
+    else
+        print_tree(root,0);
 
-    // unsigned char *mbc;
-    // mbc = "abcd";
-    // root = insert(mbc,root);
-    
-    // mbc = "𰀐";
-    // root = insert(mbc,root);
-    
-    // mbc = "ыу";
-    // root = insert(mbc,root);
-    
-    // mbc = "ыlk";
-    // root = insert(mbc,root);
-
-    // mbc = "\\\'\t\n";
-    // root = insert(mbc,root);
-
-    // print_tree(root,0);
 
     return 0;
 }

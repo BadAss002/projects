@@ -26,11 +26,17 @@ int main(void)
     */
     unsigned value = '𰀐';
 
-    unsigned value2 = '𰀐𰀐';
-    unsigned value3 = '𰀐𰀐';
+    //unsigned value2 = '𰀐𰀐';
+    //unsigned value3 = '𰀐𰀐';
+    unsigned okak = '\0\0';
 
     unsigned value4 = 'ab\
 cd';
+
+    unsigned okak2 = '\0\
+\0\0\0';
+
+    unsigned okak3 = '\t\t\t\t';
 
     unsigned value6 = 'abcd\
 ';
