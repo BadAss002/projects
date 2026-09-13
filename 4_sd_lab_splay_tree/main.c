@@ -4,6 +4,7 @@
 #include <uchar.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 
 int comment_deletion(FILE* f1) {
@@ -422,7 +423,10 @@ struct node* file_handler(char* filename, struct node* root)
             else
             {
                 printf("Symbol in single quotes more than 4 bytes\n");
-                while ((letter = fgetc(input)) != '\'');
+                do {
+                    letter = fgetc(input);
+                } while (letter != '\'' && letter != EOF);
+                //while ((letter = fgetc(input)) != '\'');
             }
 
             mbc_length = 0;
