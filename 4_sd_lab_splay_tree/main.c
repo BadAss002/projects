@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <stdint.h>
 
-#define MAX_STRING_LEN 16
-#define STRINGS_START_SIZE 10
+#define MAX_STRING_LEN 100
+#define STRINGS_START_SIZE 20
 
 int comment_deletion(FILE* f1) {
 
@@ -436,7 +436,7 @@ void ProcessEscapeSequence(FILE * input, int * letter_ptr, char * string, unsign
 
 
 
-void GetMBC(FILE * input, unsigned char * mbc, unsigned * mbc_length_ptr, char * string, unsigned * string_len_ptr)
+_Bool GetMBC(FILE * input, unsigned char * mbc, unsigned * mbc_length_ptr, char * string, unsigned * string_len_ptr)
 {
     int letter;
     int fl_slpicing_lines = 0;
@@ -467,11 +467,15 @@ void GetMBC(FILE * input, unsigned char * mbc, unsigned * mbc_length_ptr, char *
             }
         }
 
-        if (fl_slpicing_lines == 0)
+        if (*mbc_length_ptr == 4)
+            return 0;
+        else if (fl_slpicing_lines == 0)
             mbc[(*mbc_length_ptr)++] = letter;
     }
 
     string[*string_len_ptr] = '\0';
+
+    return 1;
 }
 
 
@@ -506,9 +510,14 @@ struct node* GetCharacterConstants(char* filename, struct node* root)
             for (int i=0;i<MAX_STRING_LEN;i++) string[i] = '\0';
             string_len = 0;
 
-            GetMBC(input, mbc, &mbc_length, string, &string_len);
-
-            root = insert(mbc, root, mbc_length, string);
+            if (GetMBC(input, mbc, &mbc_length, string, &string_len) == 0)
+            {
+                printf("Character constant more than %d bytes\n", sizeof(int));
+                letter = fgetc(input);
+                while (letter != '\'' && letter != EOF) letter = fgetc(input);
+            }
+            else
+                root = insert(mbc, root, mbc_length, string);
         }
     }
 
