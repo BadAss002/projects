@@ -4,7 +4,10 @@
 #include <uchar.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
+#define MAX_STRING_LEN 16
+#define STRINGS_START_SIZE 10
 
 int comment_deletion(FILE* f1) {
 
@@ -123,9 +126,10 @@ int comment_deletion(FILE* f1) {
 
 //узел
 struct node {
-    unsigned char mbc[5]; //char mbs[] = {0xF0, 0xB0, 0x80, 0x90};
-    int count;
-    uint32_t key; //inverted mbc cauase of little endian
+    unsigned char mbc[5];
+    char ** strings;
+    unsigned int count;
+    int key;
     struct node* parent;
     struct node* left;
     struct node* right;
@@ -210,7 +214,7 @@ struct node* splay(struct node* x)
 
 
 //поиск
-struct node* search(struct node* x, uint32_t key)
+struct node* search(struct node* x, int key, char * string)
 {
     if (x == NULL)
         return NULL;
@@ -218,21 +222,21 @@ struct node* search(struct node* x, uint32_t key)
     if (x->key == key)
     {
         x->count++;
-        //printf("wallahi = %d %p\n", x->count, x);
+        strcpy(x->strings[x->count-1], string);
         return splay(x);
     }
 
     if (key < x->key && x->left != NULL)
-        return search(x->left, key);
+        return search(x->left, key, string);
     if (key > x->key && x->right != NULL)
-        return search(x->right, key);
+        return search(x->right, key, string);
 
     return splay(x);
 }
 
 
 //subtrees[] = {left subtree, right subtree}
-struct node* split(struct node** subtrees,struct node* root, uint32_t key)
+struct node* split(struct node** subtrees,struct node* root, int key, char * string)
 {
     if (root == NULL)
     {
@@ -241,7 +245,7 @@ struct node* split(struct node** subtrees,struct node* root, uint32_t key)
         return NULL;
     }
 
-    root = search(root, key);
+    root = search(root, key, string);
 
     if (root->key == key)
     {
@@ -273,42 +277,37 @@ struct node* split(struct node** subtrees,struct node* root, uint32_t key)
 
 
 //вставка
-struct node* insert(unsigned char* mbc, struct node* root, unsigned mbc_length)
+struct node* insert(unsigned char* mbc, struct node* root, unsigned mbc_length, char * string)
 {
-    // uint32_t key = 0;
-    // memcpy(&key,mbc,mbc_length);
-    // printf("%d\n", mbc_length);
 
     //reverse little endian to big endian
-    uint32_t key = 0;
+    int key = 0;
     for (int i=0;i<mbc_length;i++)
     {
         key = key << 8;
         key = key | mbc[i];
     }
-    // for (int i=0;i<32;i++)
-    // {
-    //     if (key & 2147483648)
-    //         printf("1");
-    //     else
-    //         printf("0");
-    //     key = key << 1;
-    // }
-    // printf("\n");
+
 
     struct node* subtrees[2] = {NULL, NULL};
-    root = split(subtrees,root,key);
+    root = split(subtrees,root,key, string);
 
     //if count++
     if (root != NULL)
         if (root->left == subtrees[0] && root->right == subtrees[1])
             return root;
 
+    
+    //making new root
     root = (struct node*)calloc(1,sizeof(struct node));
+    root->strings = calloc(STRINGS_START_SIZE, sizeof(char*));
+    for (int i=0;i<STRINGS_START_SIZE; i++)
+        root->strings[i] = malloc(sizeof(char)*MAX_STRING_LEN);
     root->count = 1;
     root->key = key;
     for (int i=0;i<mbc_length;i++)
         root->mbc[i] = mbc[i];
+    strcpy(root->strings[root->count-1], string);
 
     root->left = subtrees[0];
     if (subtrees[0] != NULL)
@@ -325,7 +324,11 @@ struct node* insert(unsigned char* mbc, struct node* root, unsigned mbc_length)
 
 void print_tree(struct node* x, int height)
 {
-    printf("height:%d\tparent:\'%s\'\tchar:\'%s\'\tkey=%u\tcount:%d\n\t\tleft:\'%s\'\tright:\'%s\'\n\n", height,x->parent->mbc,x->mbc,x->key,x->count, x->left->mbc, x->right->mbc);
+    printf("height:%d\tchar:", height);
+    for (int i=0; i<x->count;i++)
+        printf("\'%s\' ", x->strings[i]);
+    printf("\nkey=%d\t\tcount:%d\n\n", x->key, x->count);
+
     if (x->left != NULL)
         print_tree(x->left, height+1);
     if (x->right != NULL)
@@ -334,43 +337,29 @@ void print_tree(struct node* x, int height)
 
 
 //convert letter after \ to ASCII number
-void escape_sequences(int* ch)
+_Bool BaseEscapeSequences(int * letter_ptr)
 {
-    if (*ch == '\'') *ch = 0x27;
-    else if (*ch == '\"') *ch = 0x22;
-    else if (*ch == '\?') *ch = 0x3f;
-    else if (*ch == '\\') *ch = 0x5c;
-    else if (*ch == 'a') *ch = 0x07;
-    else if (*ch == 'b') *ch = 0x08;
-    else if (*ch == 'f') *ch = 0x0c;
-    else if (*ch == 'n') *ch = 0x0a;
-    else if (*ch == 'r') *ch = 0x0d;
-    else if (*ch == 't') *ch = 0x09;
-    else if (*ch == 'v') *ch = 0x0b;
-    else if (*ch == '0') *ch = 0x0;
-    else printf("escape sequence error");
+    if (*letter_ptr == '\''){ *letter_ptr = 0x27; return 1; }
+    else if (*letter_ptr == '\"'){ *letter_ptr = 0x22; return 1; }
+    else if (*letter_ptr == '\?'){ *letter_ptr = 0x3f; return 1; }
+    else if (*letter_ptr == '\\'){ *letter_ptr = 0x5c; return 1; }
+    else if (*letter_ptr == 'a'){ *letter_ptr = 0x07; return 1; }
+    else if (*letter_ptr == 'b'){ *letter_ptr = 0x08; return 1; }
+    else if (*letter_ptr == 'f'){ *letter_ptr = 0x0c; return 1; }
+    else if (*letter_ptr == 'n'){ *letter_ptr = 0x0a; return 1; }
+    else if (*letter_ptr == 'r'){ *letter_ptr = 0x0d; return 1; }
+    else if (*letter_ptr == 't'){ *letter_ptr = 0x09; return 1; }
+    else if (*letter_ptr == 'v'){ *letter_ptr = 0x0b; return 1; }
+    else
+        return 0;
 }
 
-struct node* file_handler(char* filename, struct node* root)
+
+
+void AvoidStringConstant(FILE * input)
 {
-    FILE* input;
-    input = fopen(filename, "r");
-    
-    //delete comments
-    if (comment_deletion(input) != 0) printf("comment_deletion_error");
-
-    //reopen file without comments
-    input = fopen("temp.c", "r");
-    
     int letter;
-    unsigned char mbc[5];
-    unsigned mbc_length = 0;
-
-    while ((letter = fgetc(input)) != EOF)
-    {
-        //avoid string constants
-        if (letter == '"') { 
-            while ((letter = fgetc(input)) != EOF) {
+    while ((letter = fgetc(input)) != EOF) {
                 if (letter == '"') {break;}
                 if (letter == '\\') {
                     int temp = fgetc(input);
@@ -379,56 +368,150 @@ struct node* file_handler(char* filename, struct node* root)
                     break;
                 }
             }
-        }
-        //symbol(s) in signle quotes
-        else if (letter == '\'')
+}
+
+
+
+void ProcessEscapeSequence(FILE * input, int * letter_ptr, char * string, unsigned * string_len_ptr)
+{
+    int letter = *letter_ptr;
+
+    if (BaseEscapeSequences(letter_ptr))
+        return;
+
+    
+    //octal and hex ES
+    char * all_octal_numbers = "01234567";
+    char octal_number[4];
+    char * all_hex_numbers = "0123456789abcdefABCDEF";
+    char hex_number[3];
+
+    if (strchr(all_octal_numbers, letter))
+    {
+        int i = 0;
+        while (i < 3)
         {
-            for (int i=0;i<5;i++) mbc[i] = 0;
-            for (int i=0;i<5;i++)
-            {
-                letter = fgetc(input);
-                if (letter == EOF) break;
-                if (letter == '\\')
-                {
-                    letter = fgetc(input);
-                    if (letter == '\n')
-                    {
-                        i--;
-                        continue;
-                    }
-                    else
-                        escape_sequences(&letter);
-                }
-                else if (letter == '\'')
-                {
-                    mbc[i] = '\0';
-                    mbc_length = i;
-                    break;
-                }
+            octal_number[i++] = letter;
 
-                mbc[i] = (unsigned char)letter;   
-                mbc_length = i;             
+            letter = fgetc(input);
+            string[(*string_len_ptr)++] = letter;
+
+            if (!strchr(all_octal_numbers, letter))
+            {
+                ungetc(letter, input);
+                string[(*string_len_ptr)--] = '\0';
+                break;
             }
+        }
 
-            if (letter == '\'')
+        octal_number[i] = '\0';
+
+        *letter_ptr = (int)strtol(octal_number, NULL, 8);
+    }
+    else if (letter == 'x')
+    {
+        int i = 0;
+        while (i < 2)
+        {
+            letter = fgetc(input);
+            string[(*string_len_ptr)++] = letter;
+
+            hex_number[i++] = letter;
+
+            if (!strchr(all_hex_numbers, letter))
             {
-                if (mbc_length == 0)
-                    printf("Single quotes must contain at least 1 character\n");
-                else
-                {
-                    root = insert(mbc, root, mbc_length);
-                }
+                ungetc(letter, input);
+                string[(*string_len_ptr)--] = '\0';
+                break;
+            }
+        }
+
+        hex_number[i] = '\0';
+
+        *letter_ptr = (int)strtol(hex_number, NULL, 16);
+    }
+
+}
+
+
+
+void GetMBC(FILE * input, unsigned char * mbc, unsigned * mbc_length_ptr, char * string, unsigned * string_len_ptr)
+{
+    int letter;
+    int fl_slpicing_lines = 0;
+
+    while ((letter = fgetc(input)) != EOF)
+    {
+        fl_slpicing_lines = 0;
+
+        if (letter == '\'')
+        {
+            break;
+        }
+
+        string[(*string_len_ptr)++] = letter;
+
+        if (letter == '\\')
+        {
+            letter = fgetc(input);
+            string[(*string_len_ptr)++] = letter;
+
+            if (letter == '\n')
+            {
+                fl_slpicing_lines = 1;
             }
             else
             {
-                printf("Symbol in single quotes more than 4 bytes\n");
-                while ((letter = fgetc(input)) != '\'');
+                ProcessEscapeSequence(input, &letter, string, string_len_ptr);
             }
+        }
 
+        if (fl_slpicing_lines == 0)
+            mbc[(*mbc_length_ptr)++] = letter;
+    }
+
+    string[*string_len_ptr] = '\0';
+}
+
+
+struct node* GetCharacterConstants(char* filename, struct node* root)
+{
+    FILE* input;
+    input = fopen(filename, "r");
+    
+    //delete comments
+    if (comment_deletion(input) != 0) printf("comment_deletion_error\n");
+
+    //reopen file without comments
+    input = fopen("temp.c", "r");
+    
+    int letter;
+    unsigned integer_character_constant_max_size = sizeof(int);
+    unsigned char * mbc = malloc(sizeof(unsigned char)*integer_character_constant_max_size);
+    char string[MAX_STRING_LEN];
+    unsigned string_len = 0;
+    unsigned mbc_length = 0;
+
+    while ((letter = fgetc(input)) != EOF)
+    {
+        if (letter == '"') 
+        { 
+            AvoidStringConstant(input);
+        }
+        else if (letter == '\'')
+        {
+            for (int i=0;i<integer_character_constant_max_size;i++) mbc[i] = 0;
             mbc_length = 0;
+            for (int i=0;i<MAX_STRING_LEN;i++) string[i] = '\0';
+            string_len = 0;
+
+            GetMBC(input, mbc, &mbc_length, string, &string_len);
+
+            root = insert(mbc, root, mbc_length, string);
         }
     }
 
+    fclose(input);
     return root;
 }
 
@@ -439,9 +522,12 @@ int main(void)
 
     struct node* root = NULL;
 
-    char filename[] = "input2.c";
+    char filename[] = "input.c";
 
-    root = file_handler(filename,root);
+    root = GetCharacterConstants(filename,root);
+
+    // unsigned char mbc[] = "а";
+    // root = insert(mbc, root, 2);
 
     if (root == NULL)
         printf("The tree is empty\n");
