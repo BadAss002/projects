@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdint.h>
 
 #define MAX_STRING_LEN 16
 #define STRINGS_START_SIZE 10
