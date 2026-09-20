@@ -130,7 +130,7 @@ struct node {
     unsigned char mbc[5];
     char ** strings;
     unsigned int count;
-    int key;
+    unsigned key;
     struct node* parent;
     struct node* left;
     struct node* right;
@@ -282,7 +282,7 @@ struct node* insert(unsigned char* mbc, struct node* root, unsigned mbc_length, 
 {
 
     //reverse little endian to big endian
-    int key = 0;
+    unsigned int key = 0;
     for (int i=0;i<mbc_length;i++)
     {
         key = key << 8;
@@ -328,7 +328,7 @@ void print_tree(struct node* x, int height)
     printf("height:%d\tchar:", height);
     for (int i=0; i<x->count;i++)
         printf("\'%s\' ", x->strings[i]);
-    printf("\nkey=%d\t\tcount:%d\n\n", x->key, x->count);
+    printf("\nkey=%u\t\tcount:%d\n\n", x->key, x->count);
 
     if (x->left != NULL)
         print_tree(x->left, height+1);
@@ -373,12 +373,11 @@ void AvoidStringConstant(FILE * input)
 
 
 
-void ProcessEscapeSequence(FILE * input, int * letter_ptr, char * string, unsigned * string_len_ptr)
+_Bool ProcessEscapeSequence(FILE * input, int * letter_ptr, char * string, unsigned * string_len_ptr)
 {
-    int letter = *letter_ptr;
 
     if (BaseEscapeSequences(letter_ptr))
-        return;
+        return 1;
 
     
     //octal and hex ES
@@ -387,19 +386,19 @@ void ProcessEscapeSequence(FILE * input, int * letter_ptr, char * string, unsign
     char * all_hex_numbers = "0123456789abcdefABCDEF";
     char hex_number[3];
 
-    if (strchr(all_octal_numbers, letter))
+    if (strchr(all_octal_numbers, *letter_ptr))
     {
         int i = 0;
         while (i < 3)
         {
-            octal_number[i++] = letter;
+            octal_number[i++] = *letter_ptr;
 
-            letter = fgetc(input);
-            string[(*string_len_ptr)++] = letter;
+            *letter_ptr = fgetc(input);
+            string[(*string_len_ptr)++] = *letter_ptr;
 
-            if (!strchr(all_octal_numbers, letter))
+            if (!strchr(all_octal_numbers, *letter_ptr) || i == 3)
             {
-                ungetc(letter, input);
+                ungetc(*letter_ptr, input);
                 string[(*string_len_ptr)--] = '\0';
                 break;
             }
@@ -408,81 +407,104 @@ void ProcessEscapeSequence(FILE * input, int * letter_ptr, char * string, unsign
         octal_number[i] = '\0';
 
         *letter_ptr = (int)strtol(octal_number, NULL, 8);
+
+        if (i <= 0) return 0;
     }
-    else if (letter == 'x')
+    else if (*letter_ptr == 'x')
     {
-        int i = 0;
-        while (i < 2)
+        int j = 0;
+        //*letter_ptr =...
+        while (j < 2)
         {
-            letter = fgetc(input);
-            string[(*string_len_ptr)++] = letter;
+            *letter_ptr = fgetc(input);
+            string[(*string_len_ptr)++] = *letter_ptr;
 
-            hex_number[i++] = letter;
+            hex_number[j++] = *letter_ptr;
 
-            if (!strchr(all_hex_numbers, letter))
+            if (!strchr(all_hex_numbers, *letter_ptr))
             {
-                ungetc(letter, input);
+                ungetc(*letter_ptr, input);
                 string[(*string_len_ptr)--] = '\0';
+                j--;
                 break;
             }
         }
 
-        hex_number[i] = '\0';
+        hex_number[j] = '\0';
 
         *letter_ptr = (int)strtol(hex_number, NULL, 16);
-    }
 
+        if (j <= 0) return 0;
+    }
+    else
+        return 0;
+
+
+    return 1;
 }
 
 
 
-_Bool GetMBC(FILE * input, unsigned char * mbc, unsigned * mbc_length_ptr, char * string, unsigned * string_len_ptr)
+_Bool GetMBC(
+    FILE * input, 
+    unsigned char * mbc, 
+    unsigned * mbc_length_ptr, 
+    char * string, 
+    unsigned * string_len_ptr, 
+    int * letter_ptr)
 {
-    int letter;
     int fl_slpicing_lines = 0;
 
-    while ((letter = fgetc(input)) != EOF)
+    while ((*letter_ptr = fgetc(input)) != EOF)
     {
         fl_slpicing_lines = 0;
 
-        if (letter == '\'')
-        {
+        if (*letter_ptr == '\'')
             break;
-        }
 
-        string[(*string_len_ptr)++] = letter;
+        if (*letter_ptr == '\n')
+            return 0;
 
-        if (letter == '\\')
+        string[(*string_len_ptr)++] = *letter_ptr;
+
+        if (*letter_ptr == '\\')
         {
-            letter = fgetc(input);
-            string[(*string_len_ptr)++] = letter;
+            *letter_ptr = fgetc(input);
+            string[(*string_len_ptr)++] = *letter_ptr;
 
-            if (letter == '\n')
+            if (*letter_ptr == '\n')
             {
                 fl_slpicing_lines = 1;
             }
-            else
-            {
-                ProcessEscapeSequence(input, &letter, string, string_len_ptr);
+            else if (ProcessEscapeSequence(input, letter_ptr, string, string_len_ptr) == 0)
+            {   
+                return 0;
             }
         }
 
-        if (*mbc_length_ptr == 4)
-            return 0;
-        else if (fl_slpicing_lines == 0)
-            mbc[(*mbc_length_ptr)++] = letter;
+
+        if (fl_slpicing_lines == 0)
+        {
+            if (*mbc_length_ptr == 4)
+                return 0;
+            else
+                mbc[(*mbc_length_ptr)++] = *letter_ptr;
+        }
     }
 
     string[*string_len_ptr] = '\0';
 
-    return 1;
+    if (*mbc_length_ptr > 0)
+        return 1;
+    else
+        return 0;
 }
 
 
 struct node* GetCharacterConstants(char* filename, struct node* root)
 {
     FILE* input;
-    input = fopen(filename, "r");
+    input = fopen("input.c", "r");
     
     //delete comments
     if (comment_deletion(input) != 0) printf("comment_deletion_error\n");
@@ -505,18 +527,17 @@ struct node* GetCharacterConstants(char* filename, struct node* root)
         }
         else if (letter == '\'')
         {
-            for (int i=0;i<integer_character_constant_max_size;i++) mbc[i] = 0;
+            memset(mbc, 0, sizeof(unsigned char)*integer_character_constant_max_size);
             mbc_length = 0;
-            for (int i=0;i<MAX_STRING_LEN;i++) string[i] = '\0';
+            memset(string, 0, sizeof(char)*MAX_STRING_LEN);
             string_len = 0;
 
-            if (GetMBC(input, mbc, &mbc_length, string, &string_len) == 0)
+            if (GetMBC(input, mbc, &mbc_length, string, &string_len, &letter) == 0)
             {
-                printf("Character constant more than %d bytes\n", sizeof(int));
-                letter = fgetc(input);
-                while (letter != '\'' && letter != EOF) letter = fgetc(input);
+                printf("Character constant error\n");
+                while (letter != '\'' && letter != '\n' && letter != EOF) letter = fgetc(input);
             }
-            else
+            else if (letter == '\'')
                 root = insert(mbc, root, mbc_length, string);
         }
     }
