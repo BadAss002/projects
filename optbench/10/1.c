@@ -29,9 +29,20 @@
       double flt_1, flt_2, flt_3, flt_4, flt_5, flt_6;
 
       int    ivector[ 3 ];
-      uchar  ivector2[ 3 ];
+      volatile uchar  ivector2[ 3 ];
       short  ivector4[ 6 ];
       int    ivector5[ 100 ];
+
+void func()
+{
+      for( i4 = 0; i4 <= max_vector; i4++)
+      {
+            ivector2[ i4 ] = j * k;
+            printf("okak\n");
+      }
+
+}
+
 
       int /* cdecl */  main( argc, argv )           /* optbench */
          int argc;
@@ -42,8 +53,7 @@
              │  (j * k) может быть вынесено из цикла  │
 	     * ────────────────────────────────────── */
 
-            for( i4 = 0; i4 <= max_vector; i4++)
-                ivector2[ i4 ] = j * k;
+            func();
 
 
       }

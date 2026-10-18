@@ -28,17 +28,10 @@
 "ivector5":
 	.space 400
 	.globl	"ivector4"
-	.data
 	.align 16
 "ivector4":
-	.word	3
-	.word	4
-	.word	5
-	.word	1
-	.word	2
-	.word	1
+	.space 12
 	.globl	"ivector2"
-	.bss
 "ivector2":
 	.space 3
 	.globl	"ivector"

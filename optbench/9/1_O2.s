@@ -26,11 +26,11 @@
 	add	ecx, r8d
 	mov	DWORD PTR "g3"[rip], ecx
 	mov	DWORD PTR "m3"[rip], eax
-.L3:
+	.L3:
 	xor	eax, eax
 	add	rsp, 40
 	ret
-.L5:
+	.L5:
 	lea	rcx, .LC0[rip]
 	call	"puts"
 	jmp	.L3

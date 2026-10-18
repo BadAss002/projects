@@ -113,6 +113,9 @@
 	.align 32
 "ivector5":
 	.space 400
+	.section .rdata,"dr"
+.LC0:
+	.ascii "okak\0"
 	.text
 	.globl	"loop_jamming"
 	.def	"loop_jamming";	.scl	2;	.type	32;	.endef
@@ -122,6 +125,8 @@
 	.seh_pushreg	rbp
 	mov	rbp, rsp
 	.seh_setframe	rbp, 0
+	sub	rsp, 32
+	.seh_stackalloc	32
 	.seh_endprologue
 	mov	DWORD PTR 16[rbp], ecx
 	mov	DWORD PTR "i"[rip], 0
@@ -133,6 +138,9 @@
 	mov	eax, DWORD PTR 16[rbp]
 	add	eax, edx
 	mov	DWORD PTR "k5"[rip], eax
+	lea	rax, .LC0[rip]
+	mov	rcx, rax
+	call	"puts"
 	mov	eax, DWORD PTR "i"[rip]
 	add	eax, 1
 	mov	DWORD PTR "i"[rip], eax
@@ -149,6 +157,9 @@
 	mov	eax, DWORD PTR "i"[rip]
 	imul	eax, edx
 	mov	DWORD PTR "i5"[rip], eax
+	lea	rax, .LC0[rip]
+	mov	rcx, rax
+	call	"puts"
 	mov	eax, DWORD PTR "i"[rip]
 	add	eax, 1
 	mov	DWORD PTR "i"[rip], eax
@@ -158,6 +169,7 @@
 	jle	.L5
 	nop
 	nop
+	add	rsp, 32
 	pop	rbp
 	ret
 	.seh_endproc
@@ -183,3 +195,4 @@
 	.seh_endproc
 	.def	"__main";	.scl	2;	.type	32;	.endef
 	.ident	"GCC: (Rev5, Built by MSYS2 project) 16.1.0"
+	.def	"puts";	.scl	2;	.type	32;	.endef

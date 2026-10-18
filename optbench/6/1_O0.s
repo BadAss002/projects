@@ -113,6 +113,9 @@
 	.align 32
 "ivector5":
 	.space 400
+	.section .rdata,"dr"
+.LC0:
+	.ascii "%d\12\0"
 	.text
 	.globl	"main"
 	.def	"main";	.scl	2;	.type	32;	.endef
@@ -145,6 +148,10 @@
 	mov	eax, DWORD PTR "i"[rip]
 	cmp	eax, 99
 	jle	.L3
+	mov	eax, DWORD PTR "ivector5"[rip]
+	lea	rcx, .LC0[rip]
+	mov	edx, eax
+	call	"printf"
 	mov	eax, 0
 	add	rsp, 32
 	pop	rbp
@@ -152,3 +159,4 @@
 	.seh_endproc
 	.def	"__main";	.scl	2;	.type	32;	.endef
 	.ident	"GCC: (Rev5, Built by MSYS2 project) 16.1.0"
+	.def	"printf";	.scl	2;	.type	32;	.endef

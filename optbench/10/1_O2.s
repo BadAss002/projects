@@ -1,27 +1,73 @@
 	.file	"1.c"
 	.intel_syntax noprefix
 	.text
+	.section .rdata,"dr"
+.LC0:
+	.ascii "okak\0"
+	.text
+	.p2align 4
+	.globl	"func"
+	.def	"func";	.scl	2;	.type	32;	.endef
+	.seh_proc	"func"
+"func":
+	push	rbx
+	.seh_pushreg	rbx
+	sub	rsp, 32
+	.seh_stackalloc	32
+	.seh_endprologue
+	xor	edx, edx
+	lea	rbx, "ivector2"[rip]
+	mov	DWORD PTR "i4"[rip], 0
+	.p2align 4
+	.p2align 3
+.L2:
+	movzx	eax, BYTE PTR "j"[rip]
+	mul	BYTE PTR "k"[rip]
+	movsxd	rdx, edx
+	lea	rcx, .LC0[rip]
+	mov	BYTE PTR [rbx+rdx], al
+	call	"puts"
+	mov	eax, DWORD PTR "i4"[rip]
+	lea	edx, 1[rax]
+	mov	DWORD PTR "i4"[rip], edx
+	cmp	edx, 2
+	jle	.L2
+	add	rsp, 32
+	pop	rbx
+	ret
+	.seh_endproc
 	.section	.text.startup,"x"
 	.p2align 4
 	.globl	"main"
 	.def	"main";	.scl	2;	.type	32;	.endef
 	.seh_proc	"main"
 "main":
-	sub	rsp, 40
-	.seh_stackalloc	40
+	push	rbx
+	.seh_pushreg	rbx
+	sub	rsp, 32
+	.seh_stackalloc	32
 	.seh_endprologue
+	lea	rbx, "ivector2"[rip]
 	call	"__main"
+	xor	edx, edx
+	mov	DWORD PTR "i4"[rip], 0
+	.p2align 4
+	.p2align 3
+.L6:
 	movzx	eax, BYTE PTR "j"[rip]
 	mul	BYTE PTR "k"[rip]
-	mov	DWORD PTR "i4"[rip], 3
-	mov	edx, eax
-	movzx	ecx, al
-	mov	BYTE PTR "ivector2"[rip+2], al
+	movsxd	rdx, edx
+	lea	rcx, .LC0[rip]
+	mov	BYTE PTR [rbx+rdx], al
+	call	"puts"
+	mov	eax, DWORD PTR "i4"[rip]
+	lea	edx, 1[rax]
+	mov	DWORD PTR "i4"[rip], edx
+	cmp	edx, 2
+	jle	.L6
 	xor	eax, eax
-	sal	edx, 8
-	add	edx, ecx
-	mov	WORD PTR "ivector2"[rip], dx
-	add	rsp, 40
+	add	rsp, 32
+	pop	rbx
 	ret
 	.seh_endproc
 	.globl	"ivector5"
@@ -138,3 +184,4 @@
 	.space 4
 	.def	"__main";	.scl	2;	.type	32;	.endef
 	.ident	"GCC: (Rev5, Built by MSYS2 project) 16.1.0"
+	.def	"puts";	.scl	2;	.type	32;	.endef

@@ -7,13 +7,31 @@
 	.seh_proc	"loop_jamming"
 "loop_jamming":
 	.seh_endprologue
-	mov	eax, DWORD PTR "j5"[rip]
+	xor	eax, eax
+	.p2align 5
+	.p2align 4
+	.p2align 3
+.L2:
+	mov	edx, DWORD PTR "j5"[rip]
+	imul	edx, eax
+	add	eax, 1
+	add	edx, ecx
+	mov	DWORD PTR "k5"[rip], edx
+	cmp	eax, 5
+	jne	.L2
+	xor	eax, eax
+	.p2align 5
+	.p2align 4
+	.p2align 3
+.L3:
+	mov	edx, DWORD PTR "k5"[rip]
+	imul	edx, ecx
+	imul	edx, eax
+	add	eax, 1
+	mov	DWORD PTR "i5"[rip], edx
+	cmp	eax, 5
+	jne	.L3
 	mov	DWORD PTR "i"[rip], 5
-	lea	eax, [rcx+rax*4]
-	mov	DWORD PTR "k5"[rip], eax
-	imul	eax, ecx
-	sal	eax, 2
-	mov	DWORD PTR "i5"[rip], eax
 	ret
 	.seh_endproc
 	.section	.text.startup,"x"

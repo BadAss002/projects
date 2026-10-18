@@ -4,7 +4,6 @@
 #include <float.h>
 
 #define ITERATIONS 10000000
-
 static inline __attribute__((always_inline)) float function_to_measure()
 {
     double x = 0.97;

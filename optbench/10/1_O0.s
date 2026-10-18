@@ -113,11 +113,14 @@
 	.align 32
 "ivector5":
 	.space 400
+	.section .rdata,"dr"
+.LC0:
+	.ascii "okak\0"
 	.text
-	.globl	"main"
-	.def	"main";	.scl	2;	.type	32;	.endef
-	.seh_proc	"main"
-"main":
+	.globl	"func"
+	.def	"func";	.scl	2;	.type	32;	.endef
+	.seh_proc	"func"
+"func":
 	push	rbp
 	.seh_pushreg	rbp
 	mov	rbp, rsp
@@ -125,9 +128,6 @@
 	sub	rsp, 32
 	.seh_stackalloc	32
 	.seh_endprologue
-	mov	DWORD PTR 16[rbp], ecx
-	mov	QWORD PTR 24[rbp], rdx
-	call	"__main"
 	mov	DWORD PTR "i4"[rip], 0
 	jmp	.L2
 .L3:
@@ -142,6 +142,9 @@
 	movsxd	rax, ecx
 	lea	rcx, "ivector2"[rip]
 	mov	BYTE PTR [rax+rcx], dl
+	lea	rax, .LC0[rip]
+	mov	rcx, rax
+	call	"puts"
 	mov	eax, DWORD PTR "i4"[rip]
 	add	eax, 1
 	mov	DWORD PTR "i4"[rip], eax
@@ -149,6 +152,27 @@
 	mov	eax, DWORD PTR "i4"[rip]
 	cmp	eax, 2
 	jle	.L3
+	nop
+	nop
+	add	rsp, 32
+	pop	rbp
+	ret
+	.seh_endproc
+	.globl	"main"
+	.def	"main";	.scl	2;	.type	32;	.endef
+	.seh_proc	"main"
+"main":
+	push	rbp
+	.seh_pushreg	rbp
+	mov	rbp, rsp
+	.seh_setframe	rbp, 0
+	sub	rsp, 32
+	.seh_stackalloc	32
+	.seh_endprologue
+	mov	DWORD PTR 16[rbp], ecx
+	mov	QWORD PTR 24[rbp], rdx
+	call	"__main"
+	call	"func"
 	mov	eax, 0
 	add	rsp, 32
 	pop	rbp
@@ -156,3 +180,4 @@
 	.seh_endproc
 	.def	"__main";	.scl	2;	.type	32;	.endef
 	.ident	"GCC: (Rev5, Built by MSYS2 project) 16.1.0"
+	.def	"puts";	.scl	2;	.type	32;	.endef

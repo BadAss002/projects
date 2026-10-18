@@ -1,6 +1,9 @@
 	.file	"1.c"
 	.intel_syntax noprefix
 	.text
+	.section .rdata,"dr"
+.LC0:
+	.ascii "%d\12\0"
 	.section	.text.startup,"x"
 	.p2align 4
 	.globl	"main"
@@ -22,7 +25,10 @@
 	mov	DWORD PTR -8[rax], 5
 	cmp	rax, rdx
 	jne	.L2
+	mov	edx, DWORD PTR "ivector5"[rip]
+	lea	rcx, .LC0[rip]
 	mov	DWORD PTR "i"[rip], 100
+	call	"printf"
 	xor	eax, eax
 	add	rsp, 40
 	ret
@@ -141,3 +147,4 @@
 	.space 4
 	.def	"__main";	.scl	2;	.type	32;	.endef
 	.ident	"GCC: (Rev5, Built by MSYS2 project) 16.1.0"
+	.def	"printf";	.scl	2;	.type	32;	.endef

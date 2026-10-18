@@ -24,7 +24,7 @@
       int    i2, j2, k2;
       int    g3, h3, i3, k3, m3;
       int    i4, j4;
-      int    i5, j5, k5;
+      volatile int    i5, j5, k5;
 
       double flt_1, flt_2, flt_3, flt_4, flt_5, flt_6;
 
@@ -39,14 +39,18 @@
 	│           заголовки и могут быть слиты в один.       │
 	* ──────────────────────────────────────────────────── */
 
-
        void loop_jamming( x )
             int x;
             {
+                #pragma GCC unroll 0
                 for( i = 0; i < 5; i++ )
+                {
                     k5 = x + j5 * i;
+                }
                 for( i = 0; i < 5; i++ )
+                {
                     i5 = x * k5 * i;
+                }
             } /* Конец loop_jamming */
 
       int /* cdecl */  main( argc, argv )           /* optbench */
