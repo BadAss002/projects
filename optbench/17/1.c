@@ -1,22 +1,27 @@
 #include <stdio.h>
 
-int x,y,k;
+int x = 10;
+int y = 15;
 
-int func(int x, int y)
+int func()
 {
-    k = 100;
-    while (k>0)
-    {
-        if (x==y) k--;
-        else k -= x;
-    }
+int k = 100;
+while (k>0)
+{
+    if (x==y) {k--; printf("okak\n");}
+    else k -= x;
 
-    return x+y+k;
+    //printf("okak\n");
+}
+
+return x+y+k;
 }
 
 int main(void)
 {
-    printf("%d\n", func(10,15));
+    int a = func();
+
+    printf("%d\n", a);
 
     return 0;
 }

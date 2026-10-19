@@ -1,30 +1,50 @@
 	.file	"1.c"
 	.intel_syntax noprefix
 	.text
+	.section .rdata,"dr"
+.LC0:
+	.ascii "okak\0"
+	.text
 	.p2align 4
 	.globl	"func"
 	.def	"func";	.scl	2;	.type	32;	.endef
 	.seh_proc	"func"
 "func":
+	push	rbx
+	.seh_pushreg	rbx
+	sub	rsp, 32
+	.seh_stackalloc	32
 	.seh_endprologue
-	mov	r8d, 100
-	.p2align 5
+	mov	eax, DWORD PTR "x"[rip]
+	mov	edx, DWORD PTR "y"[rip]
+	mov	ebx, 100
+	jmp	.L4
 	.p2align 4
+	.p2align 4,,10
 	.p2align 3
+.L2:
+	sub	ebx, eax
+	test	ebx, ebx
+	jle	.L7
 .L4:
-	lea	eax, -1[r8]
-	sub	r8d, ecx
-	cmp	ecx, edx
-	cmove	r8d, eax
-	test	r8d, r8d
+	cmp	eax, edx
+	jne	.L2
+	lea	rcx, .LC0[rip]
+	sub	ebx, 1
+	call	"puts"
+	mov	eax, DWORD PTR "x"[rip]
+	mov	edx, DWORD PTR "y"[rip]
+	test	ebx, ebx
 	jg	.L4
-	add	ecx, edx
-	mov	DWORD PTR "k"[rip], r8d
-	lea	eax, [rcx+r8]
+.L7:
+	add	eax, edx
+	add	eax, ebx
+	add	rsp, 32
+	pop	rbx
 	ret
 	.seh_endproc
 	.section .rdata,"dr"
-.LC0:
+.LC1:
 	.ascii "%d\12\0"
 	.section	.text.startup,"x"
 	.p2align 4
@@ -32,31 +52,53 @@
 	.def	"main";	.scl	2;	.type	32;	.endef
 	.seh_proc	"main"
 "main":
-	sub	rsp, 40
-	.seh_stackalloc	40
+	push	rbx
+	.seh_pushreg	rbx
+	sub	rsp, 32
+	.seh_stackalloc	32
 	.seh_endprologue
+	mov	ebx, 100
 	call	"__main"
-	mov	edx, 25
+	mov	edx, DWORD PTR "x"[rip]
+	mov	eax, DWORD PTR "y"[rip]
+	jmp	.L11
+	.p2align 4
+	.p2align 4,,10
+	.p2align 3
+.L9:
+	sub	ebx, edx
+	test	ebx, ebx
+	jle	.L13
+.L11:
+	cmp	edx, eax
+	jne	.L9
 	lea	rcx, .LC0[rip]
-	mov	DWORD PTR "k"[rip], 0
+	sub	ebx, 1
+	call	"puts"
+	mov	edx, DWORD PTR "x"[rip]
+	mov	eax, DWORD PTR "y"[rip]
+	test	ebx, ebx
+	jg	.L11
+.L13:
+	add	edx, eax
+	lea	rcx, .LC1[rip]
+	add	edx, ebx
 	call	"printf"
 	xor	eax, eax
-	add	rsp, 40
+	add	rsp, 32
+	pop	rbx
 	ret
 	.seh_endproc
-	.globl	"k"
-	.bss
-	.align 4
-"k":
-	.space 4
 	.globl	"y"
+	.data
 	.align 4
 "y":
-	.space 4
+	.long	15
 	.globl	"x"
 	.align 4
 "x":
-	.space 4
+	.long	10
 	.def	"__main";	.scl	2;	.type	32;	.endef
 	.ident	"GCC: (Rev5, Built by MSYS2 project) 16.1.0"
+	.def	"puts";	.scl	2;	.type	32;	.endef
 	.def	"printf";	.scl	2;	.type	32;	.endef
