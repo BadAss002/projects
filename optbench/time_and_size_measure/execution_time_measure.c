@@ -1,42 +1,66 @@
 #include <stdio.h>
 #include <windows.h>
+#include <time.h>
 #include <math.h>
-#include <float.h>
 
-#define ITERATIONS 10000000
-static inline __attribute__((always_inline)) float function_to_measure()
+#define NUMBER_OF_ELEMENTS 1000
+
+int A[NUMBER_OF_ELEMENTS][NUMBER_OF_ELEMENTS];
+int B[NUMBER_OF_ELEMENTS][NUMBER_OF_ELEMENTS];
+double C[NUMBER_OF_ELEMENTS][NUMBER_OF_ELEMENTS];
+
+
+static inline __attribute__((always_inline)) double function_to_measure()
 {
-    double x = 0.97;
+    double average = 0.0;
 
-    double PI = 3.141592653589793;
-    double sum = 0;
-    double elem = 1;
-    unsigned long long fact = 1;
-    int banned_number = 3;
-
-    for (unsigned long long i = 1; fabs(elem) >= DBL_EPSILON; i++)
-    {
-        if (i == banned_number)
+    //заполнение матриц
+    for (int i=0;i<NUMBER_OF_ELEMENTS;i++)
+        for (int j=0;j<NUMBER_OF_ELEMENTS;j++)
         {
-            banned_number+=6;
-            continue;
+            A[i][j] = rand()%(int)(sqrt(INT_MAX));
+            B[i][j] = rand()%(int)(sqrt(INT_MAX));
+            C[i][j] = 0;    
         }
-
-        for (unsigned long long j = i / 7; j > i/13; j--)
-            fact *= j;  
-
-        elem = (pow(-1, i) * pow(x, 2 * i + 1) * cos(i * PI / 6) / fact); // 3 9 15 21...
-
-        //printf("%f\n", pow(-1, i) * pow(x, 2 * i + 1) * cos(i * PI / 6) / fact);
-        //printf("%.30f %.30f %.30f\n", elem, DBL_EPSILON, cos(i * PI / 6));
-        sum += elem;
+    
+    //перемножение матриц
+    for (int i=0;i<NUMBER_OF_ELEMENTS;i++)
+    {
+        for (int j=0;j<NUMBER_OF_ELEMENTS;j++)
+        {
+            for (int k = 0;k<NUMBER_OF_ELEMENTS;k++)
+            {
+                C[i][j] += (double)A[i][k] * B[k][j];
+            }
+        }
     }
 
-    return sum;
+    //логарифмирование каждого элемента по основанию 10
+    for (int i=0;i<NUMBER_OF_ELEMENTS;i++)
+    {
+        for (int j=0;j<NUMBER_OF_ELEMENTS;j++)
+        {
+            C[i][j] = log(C[i][j]);
+        }
+    }
+
+    //среднее арифмитическое всех элементов матрицы C
+    for (int i=0;i<NUMBER_OF_ELEMENTS;i++)
+    {
+        for (int j=0;j<NUMBER_OF_ELEMENTS;j++)
+        {
+            average += C[i][j];
+        }
+    }    
+    average /= NUMBER_OF_ELEMENTS*NUMBER_OF_ELEMENTS;
+
+    return average;
 }
 
 int main(void)
 {
+    srand(time(NULL));
+
     LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
     LARGE_INTEGER ticks_start;
@@ -44,18 +68,16 @@ int main(void)
 
     //measuring
     double result;
-    for (int j=0;j<ITERATIONS;j++)
-    {
-        result = function_to_measure();
-    }
-    printf("%f\n", result);
+
+    result = function_to_measure();
+
+    printf("result: %f\n", result);
 
     LARGE_INTEGER ticks_end;
     QueryPerformanceCounter(&ticks_end);
 
-    double time_elapsed = (double)(ticks_end.QuadPart - ticks_start.QuadPart) * 1000000000 / freq.QuadPart;
-    time_elapsed /= ITERATIONS;
+    double time_elapsed = (double)(ticks_end.QuadPart - ticks_start.QuadPart) * 1000 / freq.QuadPart;
 
-    printf("execution time = %f ns\n", time_elapsed);
+    printf("execution time = %f ms\n", time_elapsed);
 
 }
