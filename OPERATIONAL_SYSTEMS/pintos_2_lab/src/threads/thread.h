@@ -89,6 +89,8 @@ struct thread
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. (may be donated)*/
     int original_priority;
+    int cpu_burst;
+    int ticks_spent_active;
     struct list_elem allelem;           /* List element for all threads list. */
 
     /* Shared between thread.c and synch.c. */
@@ -122,9 +124,11 @@ void thread_start (void);
 
 void thread_tick (void);
 void thread_print_stats (void);
+int thread_cpu_burst (void);
 
 typedef void thread_func (void *aux);
 tid_t thread_create (const char *name, int priority, thread_func *, void *);
+tid_t thread_create_cpu_burst (const char *name, int priority, thread_func *function, void *aux, int cpu_burst); 
 
 void thread_block (void);
 void thread_unblock (struct thread *);

@@ -65,6 +65,7 @@ static void idle (void *aux UNUSED);
 static struct thread *running_thread (void);
 static struct thread *next_thread_to_run (void);
 static void init_thread (struct thread *, const char *name, int priority);
+static void init_thread_with_cpu_burst (struct thread *t, const char *name, int priority, int cpu_burst);
 static bool is_thread (struct thread *) UNUSED;
 static void *alloc_frame (struct thread *, size_t size);
 static void schedule (void);
@@ -152,6 +153,7 @@ void
 thread_tick (void) 
 {
   struct thread *t = thread_current ();
+  t->ticks_spent_active++;
 
   /* Update statistics. */
   if (t == idle_thread)
@@ -185,6 +187,12 @@ thread_print_stats (void)
 {
   printf ("Thread: %lld idle ticks, %lld kernel ticks, %lld user ticks\n",
           idle_ticks, kernel_ticks, user_ticks);
+}
+
+int
+thread_cpu_burst (void)
+{
+  return kernel_ticks+user_ticks;
 }
 
 /* Creates a new kernel thread named NAME with the given initial
@@ -222,6 +230,61 @@ thread_create (const char *name, int priority,
 
   /* Initialize thread. */
   init_thread (t, name, priority);
+  tid = t->tid = allocate_tid ();
+
+  /* Prepare thread for first run by initializing its stack.
+     Do this atomically so intermediate values for the 'stack' 
+     member cannot be observed. */
+  old_level = intr_disable ();
+
+  /* Stack frame for kernel_thread(). */
+  kf = alloc_frame (t, sizeof *kf);
+  kf->eip = NULL;
+  kf->function = function;
+  kf->aux = aux;
+
+  /* Stack frame for switch_entry(). */
+  ef = alloc_frame (t, sizeof *ef);
+  ef->eip = (void (*) (void)) kernel_thread;
+
+  /* Stack frame for switch_threads(). */
+  sf = alloc_frame (t, sizeof *sf);
+  sf->eip = switch_entry;
+  sf->ebp = 0;
+
+  intr_set_level (old_level);
+
+  /* Add to run queue. */
+  thread_unblock (t);
+
+  //check whether new thread is more prior to running
+  test_max_priority();
+
+  return tid;
+}
+
+
+// create thread with CPU BURST
+tid_t
+thread_create_cpu_burst (const char *name, int priority,
+               thread_func *function, void *aux, int cpu_burst) 
+{
+  struct thread *t;
+  struct kernel_thread_frame *kf;
+  struct switch_entry_frame *ef;
+  struct switch_threads_frame *sf;
+  tid_t tid;
+  enum intr_level old_level;
+
+  ASSERT (function != NULL);
+
+  /* Allocate thread. */
+  t = palloc_get_page (PAL_ZERO);
+  if (t == NULL)
+    return TID_ERROR;
+
+  /* Initialize thread. */
+  init_thread_with_cpu_burst (t, name, priority, cpu_burst);
   tid = t->tid = allocate_tid ();
 
   /* Prepare thread for first run by initializing its stack.
@@ -558,6 +621,26 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->original_priority = priority;
+  t->magic = THREAD_MAGIC;
+  list_init(&t->locks_held);
+  list_push_back (&all_list, &t->allelem);
+}
+
+
+static void
+init_thread_with_cpu_burst (struct thread *t, const char *name, int priority, int cpu_burst)
+{
+  ASSERT (t != NULL);
+  ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
+  ASSERT (name != NULL);
+
+  memset (t, 0, sizeof *t);
+  t->status = THREAD_BLOCKED;
+  strlcpy (t->name, name, sizeof t->name);
+  t->stack = (uint8_t *) t + PGSIZE;
+  t->priority = priority;
+  t->original_priority = priority;
+  t->cpu_burst = cpu_burst;
   t->magic = THREAD_MAGIC;
   list_init(&t->locks_held);
   list_push_back (&all_list, &t->allelem);
