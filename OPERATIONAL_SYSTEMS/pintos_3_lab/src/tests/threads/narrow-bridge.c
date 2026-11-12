@@ -11,6 +11,7 @@
 #define right 1
 #define left 0
 #define none 2
+#define MAX_CONSECUTIVE_TRAVELS 2
 
 struct queue_elem
 {
@@ -22,6 +23,8 @@ struct queue_elem
 
 int road_count;
 int road_dir;
+int consecutive_travels;
+int dir_to_yield;
 struct lock global_lock;
 struct list right_queue;
 struct list left_queue;
@@ -41,9 +44,21 @@ void add_car_to_queue(struct list * queue, int prio, int dir)
 	waiter.direction = dir;
 	waiter.priority = prio;
 	
+	sema_init(&waiter.semaphore,0);
 	list_insert_ordered(queue, &waiter.elem, queue_less_func, NULL);
 	lock_release(&global_lock);
 	sema_down(&waiter.semaphore);
+	lock_acquire(&global_lock);
+}
+
+
+void wake_car_from_queue(struct list * queue)
+{
+	if (!list_empty(queue))
+	{
+		struct queue_elem * waiter = list_entry(list_pop_front(queue), struct queue_elem, elem);
+		sema_up(&waiter->semaphore);
+	}
 }
 
 
@@ -52,6 +67,8 @@ void narrow_bridge_init(void)
 {
 	road_count = 0;
 	road_dir = none;
+	consecutive_travels = 0;
+	dir_to_yield = 2;
 	lock_init(&global_lock);
 	list_init(&right_queue);
 	list_init(&left_queue);
@@ -61,13 +78,92 @@ void arrive_bridge(enum car_priority prio UNUSED, enum car_direction dir UNUSED)
 {
 	lock_acquire(&global_lock);
 
+	bool must_wait = false;
+	
+	struct list *my_queue = (dir == left) ? &left_queue : &right_queue;
+	struct list *opp_queue = (dir == left) ? &right_queue : &left_queue;
+
+	int opp_has_emergency = !list_empty(opp_queue) && 
+			list_entry(list_front(opp_queue), struct queue_elem, elem)->priority == car_emergency;
+
+
+	if (road_dir != dir && road_dir != none)
+		must_wait = true;
+	else if (road_count == 2)
+		must_wait = true;
+	else if (!list_empty(my_queue))
+		must_wait = true;
+	else if (consecutive_travels >= 2 && !list_empty(opp_queue))
+		must_wait = true;
+	else if (opp_has_emergency && prio != car_emergency)
+		must_wait = true;
+
+
+
+	if (must_wait)
+	{
+		add_car_to_queue(my_queue, prio, dir);
+	}
+	else
+	{
+		if (road_dir == none)
+			road_dir = dir;
+		
+		road_count++;
+		consecutive_travels++;
+	}
+
+
 	lock_release(&global_lock);
 }
 
 void exit_bridge(enum car_priority prio UNUSED, enum car_direction dir UNUSED)
 {
 	lock_acquire(&global_lock);
+
+	struct list *my_queue = (dir == left) ? &left_queue : &right_queue;
+	struct list *opp_queue = (dir == left) ? &right_queue : &left_queue;
+
+	road_count--;
+
+	int my_has_emergency = !list_empty(my_queue) && 
+			list_entry(list_front(my_queue), struct queue_elem, elem)->priority == car_emergency;
+	int opp_has_emergency = !list_empty(opp_queue) && 
+			list_entry(list_front(opp_queue), struct queue_elem, elem)->priority == car_emergency;
 	
+
+	while (road_count < 2)
+	{
+		if (my_has_emergency && (consecutive_travels < 2 || list_empty(opp_queue)) && road_dir == dir)
+		{
+			road_count++;
+			consecutive_travels++;
+			wake_car_from_queue(my_queue);
+		}
+		else if (opp_has_emergency)
+		{
+			road_count++;
+			consecutive_travels = 0;
+			road_dir = !dir;
+			wake_car_from_queue(opp_queue);
+			//догонит ли?
+		}
+		else if (!list_empty(my_queue) && (consecutive_travels < 2 || list_empty(opp_queue)) && road_dir == dir)
+		{
+			road_count++;
+			consecutive_travels++;
+			wake_car_from_queue(my_queue);
+		}
+		else if (!list_empty(opp_queue))
+		{
+			road_count++;
+			consecutive_travels = 0;
+			road_dir = !dir;
+			wake_car_from_queue(opp_queue);
+		}
+		else
+			break;
+	}
 
 	lock_release(&global_lock);
 }
