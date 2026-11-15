@@ -38,12 +38,12 @@ static struct thread *initial_thread;
 static struct lock tid_lock;
 
 /* Stack frame for kernel_thread(). */
-struct kernel_thread_frame 
-  {
-    void *eip;                  /* Return address. */
-    thread_func *function;      /* Function to call. */
-    void *aux;                  /* Auxiliary data for function. */
-  };
+struct kernel_thread_frame
+{
+  void *eip;                  /* Return address. */
+  thread_func *function;      /* Function to call. */
+  void *aux;                  /* Auxiliary data for function. */
+};
 
 /* Statistics. */
 static long long idle_ticks;    /* # of timer ticks spent idle. */
@@ -153,7 +153,6 @@ void
 thread_tick (void) 
 {
   struct thread *t = thread_current ();
-  t->ticks_spent_active++;
 
   /* Update statistics. */
   if (t == idle_thread)
@@ -175,7 +174,9 @@ thread_tick (void)
   {
     struct thread *next = list_entry(list_begin(&ready_list), struct thread, elem);
     if (next->priority > t->priority || (next->priority == t->priority && thread_ticks >= TIME_SLICE))
+    {
       intr_yield_on_return ();
+    }
   }
   else if (thread_ticks >= TIME_SLICE)
     intr_yield_on_return ();

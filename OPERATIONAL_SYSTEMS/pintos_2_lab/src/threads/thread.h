@@ -90,7 +90,6 @@ struct thread
     int priority;                       /* Priority. (may be donated)*/
     int original_priority;
     int cpu_burst;
-    int ticks_spent_active;
     struct list_elem allelem;           /* List element for all threads list. */
 
     /* Shared between thread.c and synch.c. */
