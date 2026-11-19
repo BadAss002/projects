@@ -54,7 +54,8 @@ void wake_car_from_queue(struct list * queue)
 {
 	if (!list_empty(queue))
 	{
-		struct queue_elem * waiter = list_entry(list_pop_front(queue), struct queue_elem, elem);
+		struct queue_elem * waiter = 
+			list_entry(list_pop_front(queue), struct queue_elem, elem);
 		sema_up(&waiter->semaphore);
 	}
 }
@@ -82,7 +83,6 @@ void arrive_bridge(enum car_priority prio UNUSED, enum car_direction dir UNUSED)
 	int opp_has_emergency = !list_empty(opp_queue) && 
 			list_entry(list_front(opp_queue), struct queue_elem, elem)->priority == car_emergency;
 
-
 	if (road_dir != dir && road_dir != none)
 		must_wait = true;
 	else if (road_count == 2)
@@ -93,7 +93,6 @@ void arrive_bridge(enum car_priority prio UNUSED, enum car_direction dir UNUSED)
 		must_wait = true;
 
 
-
 	if (must_wait)
 	{
 		add_car_to_queue(my_queue, prio, dir);
@@ -102,7 +101,6 @@ void arrive_bridge(enum car_priority prio UNUSED, enum car_direction dir UNUSED)
 	{
 		if (road_dir == none)
 			road_dir = dir;
-		
 		road_count++;
 	}
 
